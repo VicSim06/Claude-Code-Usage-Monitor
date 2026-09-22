@@ -2554,3 +2554,81 @@ fn the_classic_theme_shows_one_badge_digit_group_in_both_usage_directions() {
         }
     }
 }
+
+#[test]
+fn system_metrics_read_as_an_idle_machine_until_something_samples_them() {
+    let context = DataContext::from_usage(None, &Canvas::default());
+    assert_eq!(context.get("system.cpu.percentage"), Some(0.0));
+    assert_eq!(context.get("system.cpu.count"), Some(0.0));
+    assert_eq!(context.get("system.memory.percentage"), Some(0.0));
+    assert_eq!(context.get("system.memory.used_gb"), Some(0.0));
+    assert_eq!(context.get("system.memory.total_gb"), Some(0.0));
+}
+
+#[test]
+fn system_metrics_bindings_publish_the_latest_reading() {
+    let metrics = crate::system_metrics::SystemMetrics {
+        cpu_percent: 37,
+        memory_percent: 74,
+        memory_used_mb: 24 * 1024,
+        memory_total_mb: 32 * 1024,
+        cpu_count: 16,
+    };
+    let context = DataContext::from_usage_with_runtime(
+        None,
+        &Canvas::default(),
+        ThemeRuntime::default().with_system_metrics(metrics),
+    );
+    assert_eq!(context.get("system.cpu.percentage"), Some(37.0));
+    assert_eq!(context.get("system.cpu.count"), Some(16.0));
+    assert_eq!(context.get("system.memory.percentage"), Some(74.0));
+    assert_eq!(context.get("system.memory.used_gb"), Some(24.0));
+    assert_eq!(context.get("system.memory.total_gb"), Some(32.0));
+    assert_eq!(
+        format_template(
+            "CPU {system.cpu.percentage:0}% · RAM {system.memory.used_gb:0.0} of {system.memory.total_gb:0} GB",
+            &context
+        ),
+        "CPU 37% · RAM 24.0 of 32 GB"
+    );
+}
+
+#[test]
+fn a_theme_that_ignores_system_metrics_does_not_ask_for_live_sampling() {
+    assert!(!ThemeDocument::starter().uses_system_metrics());
+}
+
+#[test]
+fn a_theme_reading_machine_load_asks_for_live_sampling_and_still_validates() {
+    for binding in [
+        "{system.cpu.percentage:0}%",
+        "{system.memory.percentage:0}%",
+    ] {
+        let mut theme = ThemeDocument::starter();
+        theme.id = "system-metrics-test".into();
+        let text = theme.surfaces[0]
+            .children
+            .iter_mut()
+            .find_map(|object| {
+                if let SceneContent::Text { template, .. } = &mut object.content {
+                    Some(template)
+                } else {
+                    None
+                }
+            })
+            .unwrap();
+        *text = binding.into();
+        let errors = theme.validate();
+        assert!(errors.is_empty(), "{binding}: {errors:?}");
+        assert!(theme.uses_system_metrics(), "{binding}");
+    }
+}
+
+#[test]
+fn an_expression_may_drive_layout_from_machine_load() {
+    let mut theme = ThemeDocument::starter();
+    theme.id = "system-metrics-expression-test".into();
+    theme.surfaces[0].render = Expression("system.cpu.percentage > 80".into());
+    assert!(theme.validate().is_empty());
+    assert!(theme.uses_system_metrics());
+}

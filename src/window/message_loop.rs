@@ -83,6 +83,11 @@ pub(super) unsafe extern "system" fn wnd_proc(
                     }
                     schedule_clock_timer();
                 }
+                TIMER_SYSTEM_METRICS => {
+                    refresh_system_metrics();
+                    render_layered();
+                    schedule_system_metrics_timer();
+                }
                 TIMER_RESET_POLL => {
                     let should_poll = {
                         let state = lock_state();
@@ -138,6 +143,7 @@ pub(super) unsafe extern "system" fn wnd_proc(
             render_layered();
             schedule_countdown_timer();
             schedule_clock_timer();
+            schedule_system_metrics_timer();
             suppress_tray_reposition_for(Duration::from_millis(
                 TRAY_ICON_UPDATE_REPOSITION_SUPPRESS_MS,
             ));

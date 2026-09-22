@@ -40,6 +40,36 @@ pub(super) const TEXT_TEMPLATE_VALUES: &[TextTemplateValue] = &[
         kind: TextTemplateValueKind::Number,
     },
     TextTemplateValue {
+        group: "System",
+        label: "CPU load",
+        expression: "system.cpu.percentage",
+        kind: TextTemplateValueKind::Percentage,
+    },
+    TextTemplateValue {
+        group: "System",
+        label: "Logical processors",
+        expression: "system.cpu.count",
+        kind: TextTemplateValueKind::Number,
+    },
+    TextTemplateValue {
+        group: "System",
+        label: "Memory in use",
+        expression: "system.memory.percentage",
+        kind: TextTemplateValueKind::Percentage,
+    },
+    TextTemplateValue {
+        group: "System",
+        label: "Memory used (GB)",
+        expression: "system.memory.used_gb",
+        kind: TextTemplateValueKind::Number,
+    },
+    TextTemplateValue {
+        group: "System",
+        label: "Memory installed (GB)",
+        expression: "system.memory.total_gb",
+        kind: TextTemplateValueKind::Number,
+    },
+    TextTemplateValue {
         group: "General",
         label: "Enabled provider count",
         expression: "providers.count",
@@ -1287,6 +1317,23 @@ pub(super) fn expression_variables_panel(
                     ui,
                     language.text("Date and time"),
                     &date_time,
+                    &needle,
+                    context,
+                    draft,
+                    language,
+                );
+                let system = [
+                    "system.dark",
+                    "system.cpu.percentage",
+                    "system.cpu.count",
+                    "system.memory.percentage",
+                    "system.memory.used_gb",
+                    "system.memory.total_gb",
+                ];
+                expression_variable_group(
+                    ui,
+                    language.text("System"),
+                    &system,
                     &needle,
                     context,
                     draft,

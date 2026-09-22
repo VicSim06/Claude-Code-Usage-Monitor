@@ -17,6 +17,7 @@ use windows::Win32::Graphics::Gdi::*;
 use crate::localization::LanguageId;
 use crate::models::AppUsageData;
 use crate::providers::{ProviderId, ProviderSet, PROVIDER_DESCRIPTORS};
+use crate::system_metrics::SystemMetrics;
 
 pub const THEME_SCHEMA_VERSION: u32 = 1;
 pub const CLASSIC_THEME_ID: &str = "classic-usage-widget";
@@ -1214,6 +1215,12 @@ pub struct ThemeRuntime {
     pub countdown: bool,
     pub surface_nest: SurfaceNest,
     pub floating_card_opacity: u8,
+    /// Latest machine load, published as the `system.cpu.*` and
+    /// `system.memory.*` bindings. Whole units keep this type `Copy + Eq`.
+    pub system_metrics: SystemMetrics,
+    /// User's choice to show machine load at all, published as
+    /// `display.system_metrics` so a theme can reserve or drop its row.
+    pub show_system_metrics: bool,
     host_width: u32,
     host_height: u32,
 }
@@ -1228,6 +1235,8 @@ impl Default for ThemeRuntime {
             countdown: false,
             surface_nest: SurfaceNest::Taskbar,
             floating_card_opacity: 85,
+            system_metrics: SystemMetrics::default(),
+            show_system_metrics: true,
             host_width: default_canvas_width(),
             host_height: default_canvas_height(),
         }
@@ -1258,6 +1267,8 @@ impl ThemeRuntime {
             countdown: false,
             surface_nest: SurfaceNest::Taskbar,
             floating_card_opacity: 85,
+            system_metrics: SystemMetrics::default(),
+            show_system_metrics: true,
             host_width: default_canvas_width(),
             host_height: default_canvas_height(),
         }
@@ -1287,6 +1298,21 @@ impl ThemeRuntime {
     /// Count each allowance down towards its limit instead of up from zero.
     pub fn with_countdown(mut self, countdown: bool) -> Self {
         self.countdown = countdown;
+        self
+    }
+
+    /// Supply the latest CPU and memory reading. Absent it, the `system.cpu.*`
+    /// and `system.memory.*` bindings read as an idle machine, which is what
+    /// the Theme Studio preview and every test wants.
+    pub fn with_system_metrics(mut self, metrics: SystemMetrics) -> Self {
+        self.system_metrics = metrics;
+        self
+    }
+
+    /// Whether the machine-load row is wanted at all. A theme reads this as
+    /// `display.system_metrics` to decide whether to reserve space for it.
+    pub fn with_system_metrics_shown(mut self, shown: bool) -> Self {
+        self.show_system_metrics = shown;
         self
     }
 
@@ -1340,6 +1366,21 @@ impl DataContext {
         context.insert("app.version.minor", version_parts.next().unwrap_or(0.0));
         context.insert("app.version.patch", version_parts.next().unwrap_or(0.0));
         context.insert("system.dark", crate::theme::is_dark_mode() as u8 as f64);
+        let metrics = runtime.system_metrics;
+        context.insert("system.cpu.percentage", f64::from(metrics.cpu_percent));
+        context.insert("system.cpu.count", f64::from(metrics.cpu_count));
+        context.insert(
+            "system.memory.percentage",
+            f64::from(metrics.memory_percent),
+        );
+        context.insert(
+            "system.memory.used_gb",
+            f64::from(metrics.memory_used_mb) / 1024.0,
+        );
+        context.insert(
+            "system.memory.total_gb",
+            f64::from(metrics.memory_total_mb) / 1024.0,
+        );
         context.insert("data.poll_ok", runtime.poll_ok as u8 as f64);
         context.insert("data.has_error", runtime.has_error as u8 as f64);
         context.insert(
@@ -1387,6 +1428,10 @@ impl DataContext {
             );
         }
         context.insert("display.countdown", runtime.countdown as u8 as f64);
+        context.insert(
+            "display.system_metrics",
+            runtime.show_system_metrics as u8 as f64,
+        );
         if let Some(data) = data {
             for account in &data.accounts {
                 let key = format!(
@@ -2111,6 +2156,13 @@ impl ThemeDocument {
         current_time_refresh_interval_for(self.surfaces.get(surface_index)?)
     }
 
+    /// True when anything in the theme reads a live machine metric. Only then
+    /// does the widget sample the CPU and repaint on a short interval, so
+    /// themes that ignore these bindings cost exactly nothing.
+    pub fn uses_system_metrics(&self) -> bool {
+        uses_system_metrics_in(self)
+    }
+
     pub fn is_builtin(&self) -> bool {
         is_builtin_theme_id(&self.id)
     }
@@ -2291,6 +2343,18 @@ impl ThemeDocument {
         }
         errors
     }
+}
+
+/// Mirrors [`current_time_refresh_interval_for`]: the serialized theme is the
+/// only place a binding can appear, whether in a text template, an expression,
+/// or a colour rule, so scanning it beats trying to walk every field that
+/// could hold one.
+fn uses_system_metrics_in(value: &impl Serialize) -> bool {
+    let Ok(source) = serde_json::to_string(value) else {
+        return false;
+    };
+    let source = source.to_ascii_lowercase();
+    source.contains("system.cpu") || source.contains("system.memory")
 }
 
 fn current_time_refresh_interval_for(value: &impl Serialize) -> Option<Duration> {
