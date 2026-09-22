@@ -30,13 +30,14 @@ use crate::localization::{self, LanguageId, Strings};
 use crate::models::AppUsageData;
 use crate::native_interop::{
     self, TIMER_CLOCK, TIMER_COUNTDOWN, TIMER_MOUSE_CLICK, TIMER_POLL, TIMER_RESET_POLL,
-    TIMER_TRAY_HOVER, TIMER_TRAY_REPOSITION, TIMER_UPDATE_CHECK, TIMER_WINDOW_STATE,
-    WM_APP_DISABLE_DIAGNOSTICS, WM_APP_ENABLE_DIAGNOSTICS, WM_APP_OPEN_DASHBOARD, WM_APP_QUIT,
-    WM_APP_REFRESH_NOW, WM_APP_SETTINGS_UPDATED, WM_APP_TASKBAR_COLLISION, WM_APP_TRAY,
-    WM_APP_USAGE_UPDATED,
+    TIMER_SYSTEM_METRICS, TIMER_TRAY_HOVER, TIMER_TRAY_REPOSITION, TIMER_UPDATE_CHECK,
+    TIMER_WINDOW_STATE, WM_APP_DISABLE_DIAGNOSTICS, WM_APP_ENABLE_DIAGNOSTICS,
+    WM_APP_OPEN_DASHBOARD, WM_APP_QUIT, WM_APP_REFRESH_NOW, WM_APP_SETTINGS_UPDATED,
+    WM_APP_TASKBAR_COLLISION, WM_APP_TRAY, WM_APP_USAGE_UPDATED,
 };
 use crate::poller;
 use crate::providers::{ProviderId, ProviderSet};
+use crate::system_metrics::{SystemMetrics, SystemSampler};
 use crate::theme;
 use crate::theme_engine::{
     self, Canvas, DataContext, HorizontalAnchor, MouseActionEffect, MouseActionOverrideKey,
@@ -131,6 +132,13 @@ struct AppState {
     active_theme: Option<ThemeDocument>,
     theme_clock_interval: Option<Duration>,
     tray_theme_uses_current_time: bool,
+    /// Set from the active theme: sampling and the short repaint interval only
+    /// exist for themes that actually read `system.cpu.*` or `system.memory.*`.
+    theme_uses_system_metrics: bool,
+    show_system_metrics: bool,
+    system_metrics_interval_ms: u32,
+    system_sampler: SystemSampler,
+    system_metrics: SystemMetrics,
     mirror_hwnds: Vec<SendHwnd>,
     desktop_hwnds: Vec<Option<SendHwnd>>,
     mouse_action_overrides: HashMap<MouseActionOverrideKey, theme_engine::Expression>,
@@ -590,6 +598,8 @@ fn theme_runtime_from_state(state: &AppState) -> ThemeRuntime {
         .with_countdown(state.usage_countdown)
         .with_nest(nest)
         .with_floating_card_opacity(opacity)
+        .with_system_metrics(state.system_metrics)
+        .with_system_metrics_shown(state.show_system_metrics)
 }
 
 /// A transient outage can keep presenting the last real reading while its
@@ -1532,6 +1542,7 @@ fn apply_custom_theme(
     let loaded = loaded.unwrap_or_else(ThemeDocument::starter);
     let theme_clock_interval = loaded.current_time_refresh_interval();
     let tray_theme_uses_current_time = theme_tray_uses_current_time(&loaded);
+    let theme_uses_system_metrics = loaded.uses_system_metrics();
     let old_hook = {
         let mut state = lock_state();
         let Some(state) = state.as_mut() else {
@@ -1541,6 +1552,7 @@ fn apply_custom_theme(
         state.active_theme = Some(loaded);
         state.theme_clock_interval = theme_clock_interval;
         state.tray_theme_uses_current_time = tray_theme_uses_current_time;
+        state.theme_uses_system_metrics = theme_uses_system_metrics;
         state.mouse_action_overrides.clear();
         state.hovered_mouse_layer = None;
         state.pending_mouse_click = None;
@@ -1571,6 +1583,7 @@ fn apply_custom_theme(
     sync_window_state_timer(hwnd);
     schedule_countdown_timer();
     schedule_clock_timer();
+    schedule_system_metrics_timer();
     Ok(())
 }
 
@@ -1999,6 +2012,9 @@ pub fn run() {
         let tray_theme_uses_current_time = active_theme
             .as_ref()
             .is_some_and(theme_tray_uses_current_time);
+        let theme_uses_system_metrics = active_theme
+            .as_ref()
+            .is_some_and(ThemeDocument::uses_system_metrics);
         if let Some(path) = &active_theme_path {
             let path = path.to_string_lossy().into_owned();
             if settings.active_theme_path.as_deref() != Some(path.as_str())
@@ -2118,6 +2134,11 @@ pub fn run() {
                 active_theme,
                 theme_clock_interval,
                 tray_theme_uses_current_time,
+                theme_uses_system_metrics,
+                show_system_metrics: settings.show_system_metrics,
+                system_metrics_interval_ms: settings.system_metrics_interval_ms,
+                system_sampler: SystemSampler::new(),
+                system_metrics: SystemMetrics::default(),
                 mirror_hwnds: Vec::new(),
                 desktop_hwnds: Vec::new(),
                 mouse_action_overrides: HashMap::new(),
@@ -2150,6 +2171,8 @@ pub fn run() {
         render_layered();
         schedule_countdown_timer();
         schedule_clock_timer();
+        refresh_system_metrics();
+        schedule_system_metrics_timer();
 
         if open_dashboard_on_start {
             crate::dashboard::show(hwnd);
@@ -2754,6 +2777,41 @@ fn schedule_clock_timer() {
     }
 }
 
+/// Machine load is only ever sampled when the active theme reads it *and* the
+/// user left the row on: a theme that ignores the bindings, or a row switched
+/// off, costs nothing at all.
+fn schedule_system_metrics_timer() {
+    let state = lock_state();
+    let Some(s) = state.as_ref() else {
+        return;
+    };
+    let hwnd = s.hwnd.to_hwnd();
+    if !(s.theme_uses_system_metrics && s.show_system_metrics) {
+        unsafe {
+            let _ = KillTimer(Some(hwnd), TIMER_SYSTEM_METRICS);
+        }
+        return;
+    }
+    let interval = s.system_metrics_interval_ms.max(1);
+    unsafe {
+        SetTimer(Some(hwnd), TIMER_SYSTEM_METRICS, interval, None);
+    }
+}
+
+/// Takes one reading into state. Deliberately quiet: the Win32 calls take
+/// microseconds, and a failed one keeps the previous figures on screen.
+fn refresh_system_metrics() {
+    let mut state = lock_state();
+    let Some(s) = state.as_mut() else {
+        return;
+    };
+    // Three intervals of slack: enough that an ordinary late timer still
+    // produces a reading, short enough that a reading from before a sleep or
+    // before the row was switched on is discarded rather than averaged in.
+    let max_age = Duration::from_millis(u64::from(s.system_metrics_interval_ms).saturating_mul(3));
+    s.system_metrics = s.system_sampler.sample(max_age);
+}
+
 fn time_until_next_clock_refresh(interval: Duration) -> Duration {
     let interval_ms = interval.as_millis().max(1);
     let elapsed_ms = SystemTime::now()
@@ -2807,6 +2865,8 @@ fn reload_external_settings(hwnd: HWND) {
             data.select_accounts(&settings.accounts);
         }
         state.poll_interval_ms = settings.poll_interval_ms;
+        state.show_system_metrics = settings.show_system_metrics;
+        state.system_metrics_interval_ms = settings.system_metrics_interval_ms;
         state.providers = settings.enabled_providers();
         state.usage_countdown = settings.usage_countdown;
         state.taskbar_index = settings.taskbar_index;

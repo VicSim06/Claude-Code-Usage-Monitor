@@ -13,6 +13,7 @@ mod native_interop;
 mod poller;
 mod providers;
 mod studio_app;
+mod system_metrics;
 mod theme;
 mod theme_engine;
 mod theme_package;

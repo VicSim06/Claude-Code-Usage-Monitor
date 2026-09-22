@@ -19,6 +19,7 @@ or the [changelog](CHANGELOG.md) for version history and notable changes.
 - Lives in the Windows taskbar with quick controls in the system tray
 - Supports multiple monitors and Windows startup
 - Includes configurable refresh intervals, providers, languages, and updates
+- Shows live CPU and memory load beside usage, with a switch to turn it off
 - Provides built-in themes and a visual Theme Studio for custom layouts
 - Collects no analytics or telemetry
 

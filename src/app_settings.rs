@@ -22,6 +22,11 @@ pub const POLL_15_MIN: u32 = POLL_15_MIN_SECONDS * 1_000;
 pub const POLL_1_HOUR: u32 = POLL_1_HOUR_SECONDS * 1_000;
 // SetTimer clamps longer intervals to USER_TIMER_MAXIMUM (i32::MAX ms).
 pub const MAX_POLL_MINUTES: u32 = i32::MAX as u32 / POLL_1_MIN;
+/// Machine load is sampled in seconds, not minutes: a slower reading stops
+/// describing the machine anyone is looking at. One second matches what a task
+/// manager shows; a minute is as slow as it is worth offering.
+pub const MIN_SYSTEM_METRICS_INTERVAL_MS: u32 = 1_000;
+pub const MAX_SYSTEM_METRICS_INTERVAL_MS: u32 = 60_000;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct SettingsFile {
@@ -44,6 +49,13 @@ pub struct SettingsFile {
     pub legacy_visibility_pending: bool,
     #[serde(default = "default_poll_interval")]
     pub poll_interval_ms: u32,
+    /// Show live CPU and memory in themes that carry a machine-load row.
+    #[serde(default = "default_true")]
+    pub show_system_metrics: bool,
+    /// How often machine load is re-read, in milliseconds. Only themes that
+    /// read the `system.*` bindings ever pay for this.
+    #[serde(default = "default_system_metrics_interval")]
+    pub system_metrics_interval_ms: u32,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub language: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -110,6 +122,8 @@ impl Default for SettingsFile {
             widget_visible: true,
             legacy_visibility_pending: false,
             poll_interval_ms: default_poll_interval(),
+            show_system_metrics: true,
+            system_metrics_interval_ms: default_system_metrics_interval(),
             language: None,
             last_update_check_unix: None,
             show_claude_code: true,
@@ -142,6 +156,11 @@ impl SettingsFile {
             || !self.poll_interval_ms.is_multiple_of(POLL_1_MIN)
         {
             self.poll_interval_ms = default_poll_interval();
+        }
+        if !(MIN_SYSTEM_METRICS_INTERVAL_MS..=MAX_SYSTEM_METRICS_INTERVAL_MS)
+            .contains(&self.system_metrics_interval_ms)
+        {
+            self.system_metrics_interval_ms = default_system_metrics_interval();
         }
         if self.enabled_providers().is_empty() {
             self.set_enabled_providers(ProviderSet::default());
@@ -411,6 +430,9 @@ fn wide_path(path: &Path) -> Vec<u16> {
 
 fn default_poll_interval() -> u32 {
     POLL_15_MIN
+}
+fn default_system_metrics_interval() -> u32 {
+    MIN_SYSTEM_METRICS_INTERVAL_MS
 }
 fn default_true() -> bool {
     true

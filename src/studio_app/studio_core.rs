@@ -29,6 +29,8 @@ impl StudioApp {
             .with_poll_state(self.usage_poll_ok, self.usage_has_error)
             .with_language(language)
             .with_countdown(self.settings.usage_countdown)
+            .with_system_metrics(crate::system_metrics::shared_sample())
+            .with_system_metrics_shown(self.settings.show_system_metrics)
     }
 
     pub(super) fn theme_runtime_for_surface(&self, surface_index: usize) -> ThemeRuntime {

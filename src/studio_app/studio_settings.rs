@@ -45,6 +45,43 @@ impl StudioApp {
                 setting_separator(ui);
                 setting_row(
                     ui,
+                    language.text("Machine metrics"),
+                    language.text("Show live CPU and memory in themes that display them"),
+                    |ui| {
+                        if Toggle::new(&mut self.settings.show_system_metrics)
+                            .labels(language.text("Enabled"), language.text("Disabled"))
+                            .show(ui)
+                            .changed()
+                        {
+                            changed = true;
+                        }
+                    },
+                );
+                setting_separator(ui);
+                setting_row(
+                    ui,
+                    language.text("Sampling interval"),
+                    language.text("How often CPU and memory are re-read"),
+                    |ui| {
+                        ui.label(language.text("seconds"));
+                        let mut seconds = self.settings.system_metrics_interval_ms / 1_000;
+                        if NumberField::new(&mut seconds)
+                            .range(
+                                app_settings::MIN_SYSTEM_METRICS_INTERVAL_MS / 1_000
+                                    ..=app_settings::MAX_SYSTEM_METRICS_INTERVAL_MS / 1_000,
+                            )
+                            .speed(1.0)
+                            .show(ui, 100.0)
+                            .changed()
+                        {
+                            self.settings.system_metrics_interval_ms = seconds * 1_000;
+                            changed = true;
+                        }
+                    },
+                );
+                setting_separator(ui);
+                setting_row(
+                    ui,
                     language.text("Start with Windows"),
                     language.text("Launch the monitor when you sign in"),
                     |ui| {
