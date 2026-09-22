@@ -4,6 +4,23 @@ Notable changes to Claude Code Usage Monitor are documented here, newest first.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), with
 changes grouped into Added, Changed, Fixed, and Removed where applicable.
 
+## [2.14.0] - 2026-09-22
+
+### Added
+
+- Published the machine's own load to themes as `system.cpu.percentage`, `system.cpu.count`, `system.memory.percentage`, `system.memory.used_gb`, and `system.memory.total_gb`, with `display.system_metrics` reporting whether the user wants them shown. The Theme Studio lists all five under a **System** group in the text and expression editors, and the group label is translated into every shipped language.
+- Added a CPU and a memory row to the Classic theme, at the end of the provider row and in the same segmented style, drawn with half as many segments so the block stays narrow in the taskbar. Both rows and the surface width sit behind `display.system_metrics`, so switching the feature off takes its space with it rather than leaving a gap.
+- Added **Settings > General > Machine metrics** to turn the rows on or off, and **Sampling interval** to set how many seconds pass between readings, from 1 to 60.
+
+### Changed
+
+- Readings come from `GetSystemTimes` and `GlobalMemoryStatusEx` rather than a crate, so the dependency tree is unchanged; the only build change is the `Win32_System_SystemInformation` feature. The memory percentage is Windows' own in-use figure, which is what Task Manager reports, so the two agree.
+- Sampling and the short repaint interval only exist while the active theme mentions a `system.*` binding and the setting is on. A theme that ignores them, or a row switched off, costs nothing. The CPU figure is a difference between two readings, so the first sample of a session, a suspended machine, and counters that reset after a resume keep the previous figure instead of reporting a fabricated zero.
+
+### Fork
+
+- This build updates itself from `VicSim06/Claude-Code-Usage-Monitor` rather than upstream, so a fork install is not replaced by an upstream release that lacks these rows.
+
 ## [2.13.44] - 2026-09-22
 
 ### Changed

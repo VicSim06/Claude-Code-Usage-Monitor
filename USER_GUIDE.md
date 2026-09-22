@@ -10,6 +10,7 @@ The instructions below use the app's English labels.
 - [Duplicate and customise a built-in theme](#duplicate-and-customise-a-built-in-theme)
 - [Choose providers and refresh usage](#choose-providers-and-refresh-usage)
 - [Show used or remaining allowance](#show-used-or-remaining-allowance)
+- [Show CPU and memory](#show-cpu-and-memory)
 
 ## Open the dashboard
 
@@ -105,6 +106,40 @@ The setting saves automatically. The default theme and Compact Fluent Quad
 support both directions. Custom themes need to support this setting too; a
 theme that always displays consumed usage may stay unchanged. See the
 [theme binding notes](README.md#usage) if you are editing usage expressions.
+
+## Show CPU and memory
+
+The default theme ends its row with the machine's own load: a CPU line and a
+memory line, drawn in the same segmented style as the providers beside them.
+
+1. Open **Settings > General**.
+2. Set **Machine metrics** to **Enabled** or **Disabled**. Switching it off
+   removes the block and the taskbar space it occupied.
+3. Set **Sampling interval** to the number of seconds between readings, from 1
+   to 60. One second matches what Task Manager shows.
+
+Readings come from Windows itself. The memory percentage is the same figure
+Task Manager reports as in-use physical memory, so the two agree; a slower
+sampling interval only makes the widget update less often, never less
+accurately. Nothing is sampled at all while the active theme has no machine
+load row or the setting is off.
+
+Custom themes can read the same values. In Theme Studio, look under **System**
+in the text editor's values list or the expression editor's **Variables** panel.
+
+| Binding | Meaning |
+| --- | --- |
+| `system.cpu.percentage` | Share of all logical processors busy since the previous reading, 0 to 100. |
+| `system.cpu.count` | Number of logical processors. |
+| `system.memory.percentage` | Share of physical memory in use, 0 to 100. |
+| `system.memory.used_gb` | Physical memory in use, in gigabytes. |
+| `system.memory.total_gb` | Physical memory installed, in gigabytes. |
+| `display.system_metrics` | 1 when the user has **Machine metrics** enabled, 0 when not. |
+
+A theme that mentions any `system.cpu` or `system.memory` binding is what makes
+the widget sample and repaint on the interval above, so gate the layers on
+`display.system_metrics` and fold the same factor into the surface width: a
+hidden row should not leave a gap behind.
 
 ## Claude extra limits in custom themes
 
