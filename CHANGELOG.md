@@ -14,7 +14,7 @@ changes grouped into Added, Changed, Fixed, and Removed where applicable.
 
 ### Changed
 
-- Readings come from `GetSystemTimes` and `GlobalMemoryStatusEx` rather than a crate, so the dependency tree is unchanged; the only build change is the `Win32_System_SystemInformation` feature. The memory percentage is Windows' own in-use figure, which is what Task Manager reports, so the two agree.
+- Readings come from `GetSystemTimes` and `GlobalMemoryStatusEx` rather than a crate, so the dependency tree is unchanged; the only build change is the `Win32_System_SystemInformation` feature. The release executable grows from 7166464 to 7185408 bytes, an increase of 18.5 KB or 0.26 percent. The memory percentage is Windows' own in-use figure, which is what Task Manager reports, so the two agree.
 - Sampling and the short repaint interval only exist while the active theme mentions a `system.*` binding and the setting is on. A theme that ignores them, or a row switched off, costs nothing. The CPU figure is a difference between two readings, so the first sample of a session, a suspended machine, and counters that reset after a resume keep the previous figure instead of reporting a fabricated zero.
 
 ### Fork
