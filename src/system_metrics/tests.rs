@@ -87,3 +87,25 @@ fn a_sampler_starts_with_an_idle_reading_and_a_known_processor_count() {
         "expected at least one logical processor"
     );
 }
+
+#[test]
+fn a_reading_older_than_the_allowed_age_starts_a_fresh_interval() {
+    let mut sampler = SystemSampler::new();
+    // Zero slack makes every previous reading too old, so no sample can ever
+    // be differenced against another and the load stays at its initial value.
+    let first = sampler.sample(Duration::ZERO);
+    let second = sampler.sample(Duration::ZERO);
+    assert_eq!(first.cpu_percent, 0);
+    assert_eq!(second.cpu_percent, 0);
+    assert!(second.memory_total_mb > 0, "memory should still be read");
+}
+
+#[test]
+fn successive_readings_within_the_allowed_age_produce_a_cpu_figure() {
+    let mut sampler = SystemSampler::new();
+    sampler.sample(Duration::from_secs(60));
+    let metrics = sampler.sample(Duration::from_secs(60));
+    assert!(metrics.cpu_percent <= 100);
+    assert!(metrics.memory_percent <= 100);
+    assert!(metrics.memory_used_mb <= metrics.memory_total_mb);
+}

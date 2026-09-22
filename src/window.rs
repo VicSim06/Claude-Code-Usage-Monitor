@@ -2805,7 +2805,11 @@ fn refresh_system_metrics() {
     let Some(s) = state.as_mut() else {
         return;
     };
-    s.system_metrics = s.system_sampler.sample();
+    // Three intervals of slack: enough that an ordinary late timer still
+    // produces a reading, short enough that a reading from before a sleep or
+    // before the row was switched on is discarded rather than averaged in.
+    let max_age = Duration::from_millis(u64::from(s.system_metrics_interval_ms).saturating_mul(3));
+    s.system_metrics = s.system_sampler.sample(max_age);
 }
 
 fn time_until_next_clock_refresh(interval: Duration) -> Duration {

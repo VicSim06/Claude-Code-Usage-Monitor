@@ -82,7 +82,7 @@ fn memory_reading(total_bytes: u64, available_bytes: u64, load: u32) -> (u8, u32
 /// Holds the previous CPU counters so successive samples can be differenced.
 #[derive(Debug, Default)]
 pub struct SystemSampler {
-    previous: Option<CpuTimes>,
+    previous: Option<(CpuTimes, Instant)>,
     latest: SystemMetrics,
 }
 
@@ -101,16 +101,25 @@ impl SystemSampler {
         self.latest
     }
 
-    /// Takes a fresh reading. Best effort throughout: a failed Win32 call
-    /// leaves the previous figure in place instead of flashing zeros.
-    pub fn sample(&mut self) -> SystemMetrics {
+    /// Takes a fresh reading, differencing the CPU counters against the
+    /// previous one unless that one is older than `max_age`.
+    ///
+    /// The age check is what keeps a stale baseline from being reported as
+    /// current load: the row being switched back on after an hour, a machine
+    /// resuming from sleep, or a starved timer would otherwise average the
+    /// whole gap and present it as the last second. Best effort throughout —
+    /// a failed Win32 call leaves the previous figures in place rather than
+    /// flashing zeros.
+    pub fn sample(&mut self, max_age: Duration) -> SystemMetrics {
         if let Some(current) = read_cpu_times() {
-            if let Some(previous) = self.previous {
-                if let Some(percent) = cpu_percent_between(previous, current) {
-                    self.latest.cpu_percent = percent;
+            if let Some((previous, taken_at)) = self.previous {
+                if taken_at.elapsed() <= max_age {
+                    if let Some(percent) = cpu_percent_between(previous, current) {
+                        self.latest.cpu_percent = percent;
+                    }
                 }
             }
-            self.previous = Some(current);
+            self.previous = Some((current, Instant::now()));
         }
         if let Some((percent, used_mb, total_mb)) = read_memory() {
             self.latest.memory_percent = percent;
@@ -137,11 +146,11 @@ pub fn shared_sample() -> SystemMetrics {
         Some((sampler, taken_at)) if taken_at.elapsed() < MIN_INTERVAL => sampler.latest(),
         Some((sampler, taken_at)) => {
             *taken_at = Instant::now();
-            sampler.sample()
+            sampler.sample(MIN_INTERVAL * 4)
         }
         None => {
             let mut sampler = SystemSampler::new();
-            let metrics = sampler.sample();
+            let metrics = sampler.sample(MIN_INTERVAL * 4);
             *guard = Some((sampler, Instant::now()));
             metrics
         }
