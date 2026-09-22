@@ -1220,6 +1220,8 @@ pub struct ThemeRuntime {
     pub system_metrics: SystemMetrics,
     /// User's choice to show machine load at all, published as
     /// `display.system_metrics` so a theme can reserve or drop its row.
+    /// Off unless a caller says otherwise, so a theme measured without one
+    /// keeps the size it has always had.
     pub show_system_metrics: bool,
     host_width: u32,
     host_height: u32,
@@ -1236,7 +1238,7 @@ impl Default for ThemeRuntime {
             surface_nest: SurfaceNest::Taskbar,
             floating_card_opacity: 85,
             system_metrics: SystemMetrics::default(),
-            show_system_metrics: true,
+            show_system_metrics: false,
             host_width: default_canvas_width(),
             host_height: default_canvas_height(),
         }
@@ -1268,7 +1270,7 @@ impl ThemeRuntime {
             surface_nest: SurfaceNest::Taskbar,
             floating_card_opacity: 85,
             system_metrics: SystemMetrics::default(),
-            show_system_metrics: true,
+            show_system_metrics: false,
             host_width: default_canvas_width(),
             host_height: default_canvas_height(),
         }
