@@ -107,10 +107,12 @@ support both directions. Custom themes need to support this setting too; a
 theme that always displays consumed usage may stay unchanged. See the
 [theme binding notes](README.md#usage) if you are editing usage expressions.
 
-## Show CPU and memory
+## Show CPU, memory and network
 
 The default theme ends its row with the machine's own load: a CPU line and a
-memory line, drawn in the same segmented style as the providers beside them.
+memory line, drawn in the same segmented style as the providers beside them,
+followed by the network link in use (Ethernet or Wi-Fi) with its download and
+upload rates in megabits per second.
 
 1. Open **Settings > General**.
 2. Set **Machine metrics** to **Enabled** or **Disabled**. Switching it off
@@ -124,6 +126,11 @@ sampling interval only makes the widget update less often, never less
 accurately. Nothing is sampled at all while the active theme has no machine
 load row or the setting is off.
 
+The network block follows whichever interface carries traffic to the
+internet, found from the routing table without sending anything. Plug in a
+cable while on Wi-Fi and it switches to Ethernet on the next reading; the
+rates restart from zero rather than mixing the two links' counters.
+
 Custom themes can read the same values. In Theme Studio, look under **System**
 in the text editor's values list or the expression editor's **Variables** panel.
 
@@ -134,9 +141,13 @@ in the text editor's values list or the expression editor's **Variables** panel.
 | `system.memory.percentage` | Share of physical memory in use, 0 to 100. |
 | `system.memory.used_gb` | Physical memory in use, in gigabytes. |
 | `system.memory.total_gb` | Physical memory installed, in gigabytes. |
+| `system.network.down_mbps` | Download rate on the active interface, in megabits per second. |
+| `system.network.up_mbps` | Upload rate on the active interface, in megabits per second. |
+| `system.network.kind` | Active link: 0 none, 1 Ethernet, 2 Wi-Fi, 3 other (VPN, tether, virtual switch). |
+| `system.network.type` | The same as text: `Ethernet`, `Wi-Fi`, `Net`, or empty when offline. |
 | `display.system_metrics` | 1 when the user has **Machine metrics** enabled, 0 when not. |
 
-A theme that mentions any `system.cpu` or `system.memory` binding is what makes
+A theme that mentions any `system.cpu`, `system.memory` or `system.network` binding is what makes
 the widget sample and repaint on the interval above, so gate the layers on
 `display.system_metrics` and fold the same factor into the surface width: a
 hidden row should not leave a gap behind.

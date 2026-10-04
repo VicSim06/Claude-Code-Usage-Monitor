@@ -4,6 +4,17 @@ Notable changes to Claude Code Usage Monitor are documented here, newest first.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), with
 changes grouped into Added, Changed, Fixed, and Removed where applicable.
 
+## [Unreleased]
+
+### Added
+
+- Published the active network interface to themes as `system.network.down_mbps`, `system.network.up_mbps`, `system.network.kind`, and `system.network.type`. The interface is the one that routes to the internet, so it follows a switch between Wi-Fi and Ethernet, and the Theme Studio lists the bindings under **System**.
+- Added a network block to the Classic theme after the CPU and memory rows: the link type beside download and upload rates in Mb/s, behind the same **Machine metrics** setting.
+
+### Changed
+
+- Rates are differences between two readings of the interface's byte counters, with the same stale-baseline guard as the CPU figure. A change of interface or counters that reset start a fresh interval instead of reporting a spike. The only build change is the `Win32_NetworkManagement_IpHelper` and `Win32_NetworkManagement_Ndis` features. The release executable grows from 7185408 to 7188992 bytes, an increase of 3.5 KB or 0.05 percent.
+
 ## [2.14.0] - 2026-09-22
 
 ### Added
