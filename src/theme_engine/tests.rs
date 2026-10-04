@@ -2693,3 +2693,41 @@ fn the_classic_theme_carries_a_machine_load_row_behind_the_user_setting() {
         "hiding the row should narrow the widget"
     );
 }
+
+#[test]
+fn omniroute_bindings_publish_the_latest_health_check() {
+    let unchecked = DataContext::from_usage(None, &Canvas::default());
+    assert_eq!(unchecked.get("services.omniroute.status"), Some(0.0));
+    assert_eq!(unchecked.get("display.omniroute"), Some(0.0));
+
+    let health = crate::omniroute::ServiceHealth {
+        status: crate::omniroute::ServiceStatus::Up,
+        latency_ms: 4,
+    };
+    let context = DataContext::from_usage_with_runtime(
+        None,
+        &Canvas::default(),
+        ThemeRuntime::default()
+            .with_omniroute(health)
+            .with_omniroute_shown(true),
+    );
+    assert_eq!(context.get("services.omniroute.status"), Some(1.0));
+    assert_eq!(context.get("display.omniroute"), Some(1.0));
+    assert_eq!(
+        format_template("{services.omniroute.latency_ms:0} ms", &context),
+        "4 ms"
+    );
+}
+
+#[test]
+fn only_a_theme_reading_omniroute_asks_for_health_checks() {
+    let (_, source) = BUILTIN_THEME_SOURCES[1];
+    let compact: ThemeDocument = serde_json::from_str(source).unwrap();
+    assert!(!compact.uses_omniroute());
+
+    let mut theme = ThemeDocument::starter();
+    theme.id = "omniroute-expression-test".into();
+    theme.surfaces[0].render = Expression("services.omniroute.status == 1".into());
+    assert!(theme.validate().is_empty());
+    assert!(theme.uses_omniroute());
+}

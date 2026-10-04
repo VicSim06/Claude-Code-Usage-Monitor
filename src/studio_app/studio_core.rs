@@ -31,6 +31,12 @@ impl StudioApp {
             .with_countdown(self.settings.usage_countdown)
             .with_system_metrics(crate::system_metrics::shared_sample())
             .with_system_metrics_shown(self.settings.show_system_metrics)
+            .with_omniroute(if self.theme.uses_omniroute() {
+                crate::omniroute::latest()
+            } else {
+                Default::default()
+            })
+            .with_omniroute_shown(self.settings.show_omniroute)
     }
 
     pub(super) fn theme_runtime_for_surface(&self, surface_index: usize) -> ThemeRuntime {

@@ -88,6 +88,18 @@ pub(super) const TEXT_TEMPLATE_VALUES: &[TextTemplateValue] = &[
         kind: TextTemplateValueKind::Text,
     },
     TextTemplateValue {
+        group: "System",
+        label: "OmniRoute status",
+        expression: "services.omniroute.status",
+        kind: TextTemplateValueKind::Number,
+    },
+    TextTemplateValue {
+        group: "System",
+        label: "OmniRoute latency (ms)",
+        expression: "services.omniroute.latency_ms",
+        kind: TextTemplateValueKind::Number,
+    },
+    TextTemplateValue {
         group: "General",
         label: "Enabled provider count",
         expression: "providers.count",
@@ -1350,6 +1362,8 @@ pub(super) fn expression_variables_panel(
                     "system.network.down_mbps",
                     "system.network.up_mbps",
                     "system.network.kind",
+                    "services.omniroute.status",
+                    "services.omniroute.latency_ms",
                 ];
                 expression_variable_group(
                     ui,

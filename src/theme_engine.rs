@@ -16,6 +16,7 @@ use windows::Win32::Graphics::Gdi::*;
 
 use crate::localization::LanguageId;
 use crate::models::AppUsageData;
+use crate::omniroute::ServiceHealth;
 use crate::providers::{ProviderId, ProviderSet, PROVIDER_DESCRIPTORS};
 use crate::system_metrics::SystemMetrics;
 
@@ -1223,6 +1224,11 @@ pub struct ThemeRuntime {
     /// Off unless a caller says otherwise, so a theme measured without one
     /// keeps the size it has always had.
     pub show_system_metrics: bool,
+    /// Last health check of the local OmniRoute gateway, published as
+    /// `services.omniroute.*`.
+    pub omniroute: ServiceHealth,
+    /// User's choice to show it, published as `display.omniroute`.
+    pub show_omniroute: bool,
     host_width: u32,
     host_height: u32,
 }
@@ -1239,6 +1245,8 @@ impl Default for ThemeRuntime {
             floating_card_opacity: 85,
             system_metrics: SystemMetrics::default(),
             show_system_metrics: false,
+            omniroute: ServiceHealth::default(),
+            show_omniroute: false,
             host_width: default_canvas_width(),
             host_height: default_canvas_height(),
         }
@@ -1271,6 +1279,8 @@ impl ThemeRuntime {
             floating_card_opacity: 85,
             system_metrics: SystemMetrics::default(),
             show_system_metrics: false,
+            omniroute: ServiceHealth::default(),
+            show_omniroute: false,
             host_width: default_canvas_width(),
             host_height: default_canvas_height(),
         }
@@ -1315,6 +1325,19 @@ impl ThemeRuntime {
     /// `display.system_metrics` to decide whether to reserve space for it.
     pub fn with_system_metrics_shown(mut self, shown: bool) -> Self {
         self.show_system_metrics = shown;
+        self
+    }
+
+    /// Supply the latest OmniRoute health check. Absent it, the gateway reads
+    /// as not checked yet.
+    pub fn with_omniroute(mut self, health: ServiceHealth) -> Self {
+        self.omniroute = health;
+        self
+    }
+
+    /// Whether the OmniRoute row is wanted, published as `display.omniroute`.
+    pub fn with_omniroute_shown(mut self, shown: bool) -> Self {
+        self.show_omniroute = shown;
         self
     }
 
@@ -1396,6 +1419,14 @@ impl DataContext {
             f64::from(metrics.network_kind.code()),
         );
         context.insert_string("system.network.type", metrics.network_kind.label());
+        context.insert(
+            "services.omniroute.status",
+            f64::from(runtime.omniroute.status.code()),
+        );
+        context.insert(
+            "services.omniroute.latency_ms",
+            f64::from(runtime.omniroute.latency_ms),
+        );
         context.insert("data.poll_ok", runtime.poll_ok as u8 as f64);
         context.insert("data.has_error", runtime.has_error as u8 as f64);
         context.insert(
@@ -1447,6 +1478,7 @@ impl DataContext {
             "display.system_metrics",
             runtime.show_system_metrics as u8 as f64,
         );
+        context.insert("display.omniroute", runtime.show_omniroute as u8 as f64);
         if let Some(data) = data {
             for account in &data.accounts {
                 let key = format!(
@@ -2176,6 +2208,11 @@ impl ThemeDocument {
     /// themes that ignore these bindings cost exactly nothing.
     pub fn uses_system_metrics(&self) -> bool {
         uses_system_metrics_in(self)
+    }
+
+    pub fn uses_omniroute(&self) -> bool {
+        serde_json::to_string(self)
+            .is_ok_and(|source| source.to_ascii_lowercase().contains("services.omniroute"))
     }
 
     pub fn is_builtin(&self) -> bool {
