@@ -2663,6 +2663,12 @@ fn the_classic_theme_carries_a_machine_load_row_behind_the_user_setting() {
         .find(|object| object.id == "system-metrics")
         .expect("classic theme should carry the machine load block");
     assert_eq!(row.render.0, "display.system_metrics");
+    let network = theme.surfaces[0]
+        .children
+        .iter()
+        .find(|object| object.id == "system-network")
+        .expect("classic theme should carry the network bandwidth block");
+    assert_eq!(network.render.0, "display.system_metrics");
 
     // Turning the setting off has to take the row's width with it, otherwise
     // the widget keeps a gap in the taskbar where the row used to be.
