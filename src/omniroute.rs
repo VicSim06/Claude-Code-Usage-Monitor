@@ -10,7 +10,10 @@
 use std::sync::{Mutex, OnceLock};
 use std::time::{Duration, Instant};
 
-const HEALTH_URL: &str = "http://localhost:20128/api/health";
+/// IPv4 literal rather than `localhost`: OmniRoute listens on IPv4 only, and
+/// resolving `localhost` tries `::1` first, which turned a 10 ms check into
+/// more than a second.
+const HEALTH_URL: &str = "http://127.0.0.1:20128/api/health";
 const PROBE_INTERVAL: Duration = Duration::from_secs(15);
 /// Short because the server is on this machine: anything slower is down.
 const PROBE_TIMEOUT: Duration = Duration::from_secs(2);
