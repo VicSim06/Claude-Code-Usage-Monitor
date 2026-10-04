@@ -152,6 +152,27 @@ the widget sample and repaint on the interval above, so gate the layers on
 `display.system_metrics` and fold the same factor into the surface width: a
 hidden row should not leave a gap behind.
 
+### OmniRoute status
+
+The default theme ends with the health of the local OmniRoute gateway: a green
+dot and its response time when it is running, amber when it answers but does
+not report itself healthy, red with `off` when nothing answers, and grey until
+the first check lands.
+
+1. Open **Settings > General**.
+2. Set **OmniRoute status** to **Enabled** or **Disabled**. Switching it off
+   removes the block and its taskbar space.
+
+The widget asks `http://127.0.0.1:20128/api/health` every 15 seconds from a
+background thread, never from the window itself, with a 2 second timeout and
+no proxy. Checks stop while no theme or setting needs them.
+
+| Binding | Meaning |
+| --- | --- |
+| `services.omniroute.status` | 0 not checked yet, 1 up, 2 answering but unhealthy, 3 down. |
+| `services.omniroute.latency_ms` | Round trip of the last answer, in milliseconds; 0 when down. |
+| `display.omniroute` | 1 when the user has **OmniRoute status** enabled, 0 when not. |
+
 ## Claude extra limits in custom themes
 
 Claude may report extra quotas in its usage API, including model-specific caps.

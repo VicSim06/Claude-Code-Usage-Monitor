@@ -10,10 +10,13 @@ changes grouped into Added, Changed, Fixed, and Removed where applicable.
 
 - Published the active network interface to themes as `system.network.down_mbps`, `system.network.up_mbps`, `system.network.kind`, and `system.network.type`. The interface is the one that routes to the internet, so it follows a switch between Wi-Fi and Ethernet, and the Theme Studio lists the bindings under **System**.
 - Added a network block to the Classic theme after the CPU and memory rows: the link type beside download and upload rates in Mb/s, behind the same **Machine metrics** setting.
+- Published the local OmniRoute gateway's health to themes as `services.omniroute.status` (0 not checked, 1 up, 2 answering but unhealthy, 3 down) and `services.omniroute.latency_ms`, with `display.omniroute` reporting the new **Settings > General > OmniRoute status** toggle, translated into every shipped language.
+- Added an OmniRoute block at the end of the Classic theme: a coloured dot and the response time, or `off` when nothing answers.
 
 ### Changed
 
 - Rates are differences between two readings of the interface's byte counters, with the same stale-baseline guard as the CPU figure. A change of interface or counters that reset start a fresh interval instead of reporting a spike. The only build change is the `Win32_NetworkManagement_IpHelper` and `Win32_NetworkManagement_Ndis` features. The release executable grows from 7185408 to 7188992 bytes, an increase of 3.5 KB or 0.05 percent.
+- The OmniRoute check runs on its own thread against `http://127.0.0.1:20128/api/health` every 15 seconds, with a 2 second timeout and no proxy, so the window never waits on it. It uses the IPv4 literal because OmniRoute listens on IPv4 only and resolving `localhost` tried `::1` first, which measured 1429 ms against 16 to 24 ms. Checks stop while nothing reads them. It reuses the existing `ureq` client, and the release executable grows to 7203840 bytes, 14.8 KB or 0.2 percent over the network build.
 
 ## [2.14.0] - 2026-09-22
 
