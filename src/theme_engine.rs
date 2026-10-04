@@ -1215,8 +1215,8 @@ pub struct ThemeRuntime {
     pub countdown: bool,
     pub surface_nest: SurfaceNest,
     pub floating_card_opacity: u8,
-    /// Latest machine load, published as the `system.cpu.*` and
-    /// `system.memory.*` bindings. Whole units keep this type `Copy + Eq`.
+    /// Latest machine load, published as the `system.cpu.*`,
+    /// `system.memory.*` and `system.network.*` bindings. Whole units keep this type `Copy + Eq`.
     pub system_metrics: SystemMetrics,
     /// User's choice to show machine load at all, published as
     /// `display.system_metrics` so a theme can reserve or drop its row.
@@ -1383,6 +1383,19 @@ impl DataContext {
             "system.memory.total_gb",
             f64::from(metrics.memory_total_mb) / 1024.0,
         );
+        context.insert(
+            "system.network.down_mbps",
+            f64::from(metrics.network_down_kbps) / 1000.0,
+        );
+        context.insert(
+            "system.network.up_mbps",
+            f64::from(metrics.network_up_kbps) / 1000.0,
+        );
+        context.insert(
+            "system.network.kind",
+            f64::from(metrics.network_kind.code()),
+        );
+        context.insert_string("system.network.type", metrics.network_kind.label());
         context.insert("data.poll_ok", runtime.poll_ok as u8 as f64);
         context.insert("data.has_error", runtime.has_error as u8 as f64);
         context.insert(
@@ -2356,7 +2369,9 @@ fn uses_system_metrics_in(value: &impl Serialize) -> bool {
         return false;
     };
     let source = source.to_ascii_lowercase();
-    source.contains("system.cpu") || source.contains("system.memory")
+    source.contains("system.cpu")
+        || source.contains("system.memory")
+        || source.contains("system.network")
 }
 
 fn current_time_refresh_interval_for(value: &impl Serialize) -> Option<Duration> {

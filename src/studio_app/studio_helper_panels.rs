@@ -70,6 +70,24 @@ pub(super) const TEXT_TEMPLATE_VALUES: &[TextTemplateValue] = &[
         kind: TextTemplateValueKind::Number,
     },
     TextTemplateValue {
+        group: "System",
+        label: "Network download (Mb/s)",
+        expression: "system.network.down_mbps",
+        kind: TextTemplateValueKind::Number,
+    },
+    TextTemplateValue {
+        group: "System",
+        label: "Network upload (Mb/s)",
+        expression: "system.network.up_mbps",
+        kind: TextTemplateValueKind::Number,
+    },
+    TextTemplateValue {
+        group: "System",
+        label: "Network type",
+        expression: "system.network.type",
+        kind: TextTemplateValueKind::Text,
+    },
+    TextTemplateValue {
         group: "General",
         label: "Enabled provider count",
         expression: "providers.count",
@@ -1329,6 +1347,9 @@ pub(super) fn expression_variables_panel(
                     "system.memory.percentage",
                     "system.memory.used_gb",
                     "system.memory.total_gb",
+                    "system.network.down_mbps",
+                    "system.network.up_mbps",
+                    "system.network.kind",
                 ];
                 expression_variable_group(
                     ui,

@@ -109,3 +109,74 @@ fn successive_readings_within_the_allowed_age_produce_a_cpu_figure() {
     assert!(metrics.memory_percent <= 100);
     assert!(metrics.memory_used_mb <= metrics.memory_total_mb);
 }
+
+fn counters(index: u32, received: u64, sent: u64) -> NetworkCounters {
+    NetworkCounters::new(index, received, sent)
+}
+
+#[test]
+fn network_rates_are_reported_in_kilobits_per_second() {
+    // 1.25 MB in and 125 kB out over one second: 10 Mb/s down, 1 Mb/s up.
+    let previous = counters(7, 0, 0);
+    let current = counters(7, 1_250_000, 125_000);
+    assert_eq!(
+        network_kbps_between(previous, current, Duration::from_secs(1)),
+        Some((10_000, 1_000))
+    );
+}
+
+#[test]
+fn network_rates_account_for_the_real_interval_length() {
+    let previous = counters(7, 0, 0);
+    let current = counters(7, 1_250_000, 0);
+    assert_eq!(
+        network_kbps_between(previous, current, Duration::from_millis(2_000)),
+        Some((5_000, 0))
+    );
+}
+
+#[test]
+fn switching_interfaces_reports_no_network_rate() {
+    let previous = counters(7, 1_000, 1_000);
+    let current = counters(12, 9_000_000, 9_000_000);
+    assert_eq!(
+        network_kbps_between(previous, current, Duration::from_secs(1)),
+        None
+    );
+}
+
+#[test]
+fn network_counters_that_go_backwards_report_nothing() {
+    let previous = counters(7, 5_000, 5_000);
+    let current = counters(7, 10, 6_000);
+    assert_eq!(
+        network_kbps_between(previous, current, Duration::from_secs(1)),
+        None
+    );
+}
+
+#[test]
+fn a_network_interval_of_no_time_reports_nothing() {
+    let first = counters(7, 1_000, 1_000);
+    assert_eq!(network_kbps_between(first, first, Duration::ZERO), None);
+}
+
+#[test]
+fn network_kinds_publish_stable_codes_and_labels() {
+    assert_eq!(NetworkKind::from_interface_type(6), NetworkKind::Ethernet);
+    assert_eq!(NetworkKind::from_interface_type(71), NetworkKind::WiFi);
+    assert_eq!(NetworkKind::from_interface_type(131), NetworkKind::Other);
+    assert_eq!(NetworkKind::None.code(), 0);
+    assert_eq!(NetworkKind::WiFi.label(), "Wi-Fi");
+}
+
+#[test]
+fn a_live_sample_names_the_active_interface_when_one_routes_out() {
+    let mut sampler = SystemSampler::new();
+    sampler.sample(Duration::from_secs(60));
+    let metrics = sampler.sample(Duration::from_secs(60));
+    // A CI box may have no route; a connected machine must name its link.
+    if metrics.network_kind != NetworkKind::None {
+        assert!(!metrics.network_kind.label().is_empty());
+    }
+}

@@ -2577,11 +2577,22 @@ fn system_metrics_bindings_publish_the_latest_reading() {
         memory_used_mb: 24 * 1024,
         memory_total_mb: 32 * 1024,
         cpu_count: 16,
+        network_down_kbps: 12_340,
+        network_up_kbps: 800,
+        network_kind: crate::system_metrics::NetworkKind::WiFi,
     };
     let context = DataContext::from_usage_with_runtime(
         None,
         &Canvas::default(),
         ThemeRuntime::default().with_system_metrics(metrics),
+    );
+    assert_eq!(context.get("system.network.kind"), Some(2.0));
+    assert_eq!(
+        format_template(
+            "{system.network.type} ↓ {system.network.down_mbps:0.0} ↑ {system.network.up_mbps:0.0} Mb/s",
+            &context
+        ),
+        "Wi-Fi ↓ 12.3 ↑ 0.8 Mb/s"
     );
     assert_eq!(context.get("system.cpu.percentage"), Some(37.0));
     assert_eq!(context.get("system.cpu.count"), Some(16.0));
@@ -2609,6 +2620,7 @@ fn a_theme_reading_machine_load_asks_for_live_sampling_and_still_validates() {
     for binding in [
         "{system.cpu.percentage:0}%",
         "{system.memory.percentage:0}%",
+        "{system.network.down_mbps:0.0} Mb/s",
     ] {
         let mut theme = ThemeDocument::starter();
         theme.id = "system-metrics-test".into();
