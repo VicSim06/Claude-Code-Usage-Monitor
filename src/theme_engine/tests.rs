@@ -2577,11 +2577,22 @@ fn system_metrics_bindings_publish_the_latest_reading() {
         memory_used_mb: 24 * 1024,
         memory_total_mb: 32 * 1024,
         cpu_count: 16,
+        network_down_kbps: 12_340,
+        network_up_kbps: 800,
+        network_kind: crate::system_metrics::NetworkKind::WiFi,
     };
     let context = DataContext::from_usage_with_runtime(
         None,
         &Canvas::default(),
         ThemeRuntime::default().with_system_metrics(metrics),
+    );
+    assert_eq!(context.get("system.network.kind"), Some(2.0));
+    assert_eq!(
+        format_template(
+            "{system.network.type} ↓ {system.network.down_mbps:0.0} ↑ {system.network.up_mbps:0.0} Mb/s",
+            &context
+        ),
+        "Wi-Fi ↓ 12.3 ↑ 0.8 Mb/s"
     );
     assert_eq!(context.get("system.cpu.percentage"), Some(37.0));
     assert_eq!(context.get("system.cpu.count"), Some(16.0));
@@ -2609,6 +2620,7 @@ fn a_theme_reading_machine_load_asks_for_live_sampling_and_still_validates() {
     for binding in [
         "{system.cpu.percentage:0}%",
         "{system.memory.percentage:0}%",
+        "{system.network.down_mbps:0.0} Mb/s",
     ] {
         let mut theme = ThemeDocument::starter();
         theme.id = "system-metrics-test".into();
@@ -2651,6 +2663,20 @@ fn the_classic_theme_carries_a_machine_load_row_behind_the_user_setting() {
         .find(|object| object.id == "system-metrics")
         .expect("classic theme should carry the machine load block");
     assert_eq!(row.render.0, "display.system_metrics");
+    let network = theme.surfaces[0]
+        .children
+        .iter()
+        .find(|object| object.id == "system-network")
+        .expect("classic theme should carry the network bandwidth block");
+    assert_eq!(network.render.0, "display.system_metrics");
+    let omniroute = theme.surfaces[0]
+        .children
+        .iter()
+        .find(|object| object.id == "omniroute-status")
+        .expect("classic theme should carry the OmniRoute status block");
+    assert_eq!(omniroute.render.0, "display.omniroute");
+    assert!(theme.uses_omniroute());
+    assert!(theme.surfaces[0].width.0.contains("display.omniroute"));
 
     // Turning the setting off has to take the row's width with it, otherwise
     // the widget keeps a gap in the taskbar where the row used to be.
@@ -2674,4 +2700,42 @@ fn the_classic_theme_carries_a_machine_load_row_behind_the_user_setting() {
         width_of(&shown) > width_of(&hidden),
         "hiding the row should narrow the widget"
     );
+}
+
+#[test]
+fn omniroute_bindings_publish_the_latest_health_check() {
+    let unchecked = DataContext::from_usage(None, &Canvas::default());
+    assert_eq!(unchecked.get("services.omniroute.status"), Some(0.0));
+    assert_eq!(unchecked.get("display.omniroute"), Some(0.0));
+
+    let health = crate::omniroute::ServiceHealth {
+        status: crate::omniroute::ServiceStatus::Up,
+        latency_ms: 4,
+    };
+    let context = DataContext::from_usage_with_runtime(
+        None,
+        &Canvas::default(),
+        ThemeRuntime::default()
+            .with_omniroute(health)
+            .with_omniroute_shown(true),
+    );
+    assert_eq!(context.get("services.omniroute.status"), Some(1.0));
+    assert_eq!(context.get("display.omniroute"), Some(1.0));
+    assert_eq!(
+        format_template("{services.omniroute.latency_ms:0} ms", &context),
+        "4 ms"
+    );
+}
+
+#[test]
+fn only_a_theme_reading_omniroute_asks_for_health_checks() {
+    let (_, source) = BUILTIN_THEME_SOURCES[1];
+    let compact: ThemeDocument = serde_json::from_str(source).unwrap();
+    assert!(!compact.uses_omniroute());
+
+    let mut theme = ThemeDocument::starter();
+    theme.id = "omniroute-expression-test".into();
+    theme.surfaces[0].render = Expression("services.omniroute.status == 1".into());
+    assert!(theme.validate().is_empty());
+    assert!(theme.uses_omniroute());
 }

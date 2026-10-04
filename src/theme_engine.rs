@@ -16,6 +16,7 @@ use windows::Win32::Graphics::Gdi::*;
 
 use crate::localization::LanguageId;
 use crate::models::AppUsageData;
+use crate::omniroute::ServiceHealth;
 use crate::providers::{ProviderId, ProviderSet, PROVIDER_DESCRIPTORS};
 use crate::system_metrics::SystemMetrics;
 
@@ -1215,14 +1216,19 @@ pub struct ThemeRuntime {
     pub countdown: bool,
     pub surface_nest: SurfaceNest,
     pub floating_card_opacity: u8,
-    /// Latest machine load, published as the `system.cpu.*` and
-    /// `system.memory.*` bindings. Whole units keep this type `Copy + Eq`.
+    /// Latest machine load, published as the `system.cpu.*`,
+    /// `system.memory.*` and `system.network.*` bindings. Whole units keep this type `Copy + Eq`.
     pub system_metrics: SystemMetrics,
     /// User's choice to show machine load at all, published as
     /// `display.system_metrics` so a theme can reserve or drop its row.
     /// Off unless a caller says otherwise, so a theme measured without one
     /// keeps the size it has always had.
     pub show_system_metrics: bool,
+    /// Last health check of the local OmniRoute gateway, published as
+    /// `services.omniroute.*`.
+    pub omniroute: ServiceHealth,
+    /// User's choice to show it, published as `display.omniroute`.
+    pub show_omniroute: bool,
     host_width: u32,
     host_height: u32,
 }
@@ -1239,6 +1245,8 @@ impl Default for ThemeRuntime {
             floating_card_opacity: 85,
             system_metrics: SystemMetrics::default(),
             show_system_metrics: false,
+            omniroute: ServiceHealth::default(),
+            show_omniroute: false,
             host_width: default_canvas_width(),
             host_height: default_canvas_height(),
         }
@@ -1271,6 +1279,8 @@ impl ThemeRuntime {
             floating_card_opacity: 85,
             system_metrics: SystemMetrics::default(),
             show_system_metrics: false,
+            omniroute: ServiceHealth::default(),
+            show_omniroute: false,
             host_width: default_canvas_width(),
             host_height: default_canvas_height(),
         }
@@ -1315,6 +1325,19 @@ impl ThemeRuntime {
     /// `display.system_metrics` to decide whether to reserve space for it.
     pub fn with_system_metrics_shown(mut self, shown: bool) -> Self {
         self.show_system_metrics = shown;
+        self
+    }
+
+    /// Supply the latest OmniRoute health check. Absent it, the gateway reads
+    /// as not checked yet.
+    pub fn with_omniroute(mut self, health: ServiceHealth) -> Self {
+        self.omniroute = health;
+        self
+    }
+
+    /// Whether the OmniRoute row is wanted, published as `display.omniroute`.
+    pub fn with_omniroute_shown(mut self, shown: bool) -> Self {
+        self.show_omniroute = shown;
         self
     }
 
@@ -1383,6 +1406,27 @@ impl DataContext {
             "system.memory.total_gb",
             f64::from(metrics.memory_total_mb) / 1024.0,
         );
+        context.insert(
+            "system.network.down_mbps",
+            f64::from(metrics.network_down_kbps) / 1000.0,
+        );
+        context.insert(
+            "system.network.up_mbps",
+            f64::from(metrics.network_up_kbps) / 1000.0,
+        );
+        context.insert(
+            "system.network.kind",
+            f64::from(metrics.network_kind.code()),
+        );
+        context.insert_string("system.network.type", metrics.network_kind.label());
+        context.insert(
+            "services.omniroute.status",
+            f64::from(runtime.omniroute.status.code()),
+        );
+        context.insert(
+            "services.omniroute.latency_ms",
+            f64::from(runtime.omniroute.latency_ms),
+        );
         context.insert("data.poll_ok", runtime.poll_ok as u8 as f64);
         context.insert("data.has_error", runtime.has_error as u8 as f64);
         context.insert(
@@ -1434,6 +1478,7 @@ impl DataContext {
             "display.system_metrics",
             runtime.show_system_metrics as u8 as f64,
         );
+        context.insert("display.omniroute", runtime.show_omniroute as u8 as f64);
         if let Some(data) = data {
             for account in &data.accounts {
                 let key = format!(
@@ -2165,6 +2210,11 @@ impl ThemeDocument {
         uses_system_metrics_in(self)
     }
 
+    pub fn uses_omniroute(&self) -> bool {
+        serde_json::to_string(self)
+            .is_ok_and(|source| source.to_ascii_lowercase().contains("services.omniroute"))
+    }
+
     pub fn is_builtin(&self) -> bool {
         is_builtin_theme_id(&self.id)
     }
@@ -2356,7 +2406,9 @@ fn uses_system_metrics_in(value: &impl Serialize) -> bool {
         return false;
     };
     let source = source.to_ascii_lowercase();
-    source.contains("system.cpu") || source.contains("system.memory")
+    source.contains("system.cpu")
+        || source.contains("system.memory")
+        || source.contains("system.network")
 }
 
 fn current_time_refresh_interval_for(value: &impl Serialize) -> Option<Duration> {

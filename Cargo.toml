@@ -32,6 +32,8 @@ zip = { version = "8.6", default-features = false, features = ["deflate"] }
 version = "0.62"
 features = [
     "Win32_Foundation",
+    "Win32_NetworkManagement_IpHelper",
+    "Win32_NetworkManagement_Ndis",
     "Win32_Globalization",
     "Win32_Graphics_Gdi",
     "Win32_System_LibraryLoader",

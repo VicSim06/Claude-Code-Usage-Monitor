@@ -35,6 +35,7 @@ use crate::native_interop::{
     WM_APP_OPEN_DASHBOARD, WM_APP_QUIT, WM_APP_REFRESH_NOW, WM_APP_SETTINGS_UPDATED,
     WM_APP_TASKBAR_COLLISION, WM_APP_TRAY, WM_APP_USAGE_UPDATED,
 };
+use crate::omniroute::ServiceHealth;
 use crate::poller;
 use crate::providers::{ProviderId, ProviderSet};
 use crate::system_metrics::{SystemMetrics, SystemSampler};
@@ -139,12 +140,26 @@ struct AppState {
     system_metrics_interval_ms: u32,
     system_sampler: SystemSampler,
     system_metrics: SystemMetrics,
+    /// Same gating as machine load, for the `services.omniroute.*` bindings.
+    theme_uses_omniroute: bool,
+    show_omniroute: bool,
+    omniroute: ServiceHealth,
     mirror_hwnds: Vec<SendHwnd>,
     desktop_hwnds: Vec<Option<SendHwnd>>,
     mouse_action_overrides: HashMap<MouseActionOverrideKey, theme_engine::Expression>,
     hovered_mouse_layer: Option<(usize, String)>,
     pending_mouse_click: Option<PendingMouseClick>,
     suppress_next_left_up: bool,
+}
+
+impl AppState {
+    fn wants_system_metrics(&self) -> bool {
+        self.theme_uses_system_metrics && self.show_system_metrics
+    }
+
+    fn wants_omniroute(&self) -> bool {
+        self.theme_uses_omniroute && self.show_omniroute
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -600,6 +615,8 @@ fn theme_runtime_from_state(state: &AppState) -> ThemeRuntime {
         .with_floating_card_opacity(opacity)
         .with_system_metrics(state.system_metrics)
         .with_system_metrics_shown(state.show_system_metrics)
+        .with_omniroute(state.omniroute)
+        .with_omniroute_shown(state.show_omniroute)
 }
 
 /// A transient outage can keep presenting the last real reading while its
@@ -1543,6 +1560,7 @@ fn apply_custom_theme(
     let theme_clock_interval = loaded.current_time_refresh_interval();
     let tray_theme_uses_current_time = theme_tray_uses_current_time(&loaded);
     let theme_uses_system_metrics = loaded.uses_system_metrics();
+    let theme_uses_omniroute = loaded.uses_omniroute();
     let old_hook = {
         let mut state = lock_state();
         let Some(state) = state.as_mut() else {
@@ -1553,6 +1571,7 @@ fn apply_custom_theme(
         state.theme_clock_interval = theme_clock_interval;
         state.tray_theme_uses_current_time = tray_theme_uses_current_time;
         state.theme_uses_system_metrics = theme_uses_system_metrics;
+        state.theme_uses_omniroute = theme_uses_omniroute;
         state.mouse_action_overrides.clear();
         state.hovered_mouse_layer = None;
         state.pending_mouse_click = None;
@@ -2015,6 +2034,9 @@ pub fn run() {
         let theme_uses_system_metrics = active_theme
             .as_ref()
             .is_some_and(ThemeDocument::uses_system_metrics);
+        let theme_uses_omniroute = active_theme
+            .as_ref()
+            .is_some_and(ThemeDocument::uses_omniroute);
         if let Some(path) = &active_theme_path {
             let path = path.to_string_lossy().into_owned();
             if settings.active_theme_path.as_deref() != Some(path.as_str())
@@ -2139,6 +2161,9 @@ pub fn run() {
                 system_metrics_interval_ms: settings.system_metrics_interval_ms,
                 system_sampler: SystemSampler::new(),
                 system_metrics: SystemMetrics::default(),
+                theme_uses_omniroute,
+                show_omniroute: settings.show_omniroute,
+                omniroute: ServiceHealth::default(),
                 mirror_hwnds: Vec::new(),
                 desktop_hwnds: Vec::new(),
                 mouse_action_overrides: HashMap::new(),
@@ -2786,7 +2811,7 @@ fn schedule_system_metrics_timer() {
         return;
     };
     let hwnd = s.hwnd.to_hwnd();
-    if !(s.theme_uses_system_metrics && s.show_system_metrics) {
+    if !(s.wants_system_metrics() || s.wants_omniroute()) {
         unsafe {
             let _ = KillTimer(Some(hwnd), TIMER_SYSTEM_METRICS);
         }
@@ -2809,7 +2834,13 @@ fn refresh_system_metrics() {
     // produces a reading, short enough that a reading from before a sleep or
     // before the row was switched on is discarded rather than averaged in.
     let max_age = Duration::from_millis(u64::from(s.system_metrics_interval_ms).saturating_mul(3));
-    s.system_metrics = s.system_sampler.sample(max_age);
+    if s.wants_system_metrics() {
+        s.system_metrics = s.system_sampler.sample(max_age);
+    }
+    if s.wants_omniroute() {
+        // Never blocks: the HTTP check runs on its own thread.
+        s.omniroute = crate::omniroute::latest();
+    }
 }
 
 fn time_until_next_clock_refresh(interval: Duration) -> Duration {
@@ -2866,6 +2897,7 @@ fn reload_external_settings(hwnd: HWND) {
         }
         state.poll_interval_ms = settings.poll_interval_ms;
         state.show_system_metrics = settings.show_system_metrics;
+        state.show_omniroute = settings.show_omniroute;
         state.system_metrics_interval_ms = settings.system_metrics_interval_ms;
         state.providers = settings.enabled_providers();
         state.usage_countdown = settings.usage_countdown;

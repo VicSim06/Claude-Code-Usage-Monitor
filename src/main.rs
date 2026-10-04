@@ -10,6 +10,7 @@ mod font_catalog;
 mod localization;
 mod models;
 mod native_interop;
+mod omniroute;
 mod poller;
 mod providers;
 mod studio_app;
