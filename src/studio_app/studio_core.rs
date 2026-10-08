@@ -37,6 +37,12 @@ impl StudioApp {
                 Default::default()
             })
             .with_omniroute_shown(self.settings.show_omniroute)
+            .with_firecrawl(if self.theme.uses_firecrawl() {
+                crate::firecrawl::latest()
+            } else {
+                Default::default()
+            })
+            .with_firecrawl_shown(self.settings.show_firecrawl && crate::firecrawl::configured())
     }
 
     pub(super) fn theme_runtime_for_surface(&self, surface_index: usize) -> ThemeRuntime {

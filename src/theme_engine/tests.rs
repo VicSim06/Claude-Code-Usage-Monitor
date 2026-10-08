@@ -752,7 +752,7 @@ fn built_in_classic_uses_149_geometry() {
 fn starter_theme_round_trips_and_validates() {
     let theme = ThemeDocument::starter();
     assert!(theme.validate().is_empty());
-    let segments = theme.surfaces[0]
+    let mut segments = theme.surfaces[0]
         .children
         .iter()
         .filter_map(|object| match object.content {
@@ -760,14 +760,17 @@ fn starter_theme_round_trips_and_validates() {
             _ => None,
         })
         .collect::<Vec<_>>();
+    segments.sort_unstable();
     // Classic contains separate light and dark progress layers so the
     // 1.4.9 palette follows the taskbar mode without runtime recolouring:
     // five providers over two windows in two modes, plus a credit overlay on
     // the weekly row of the two providers that report credits.
     // The machine load block adds a CPU and a memory row in both modes, each
-    // drawn with half as many segments so it stays narrow in the taskbar.
+    // drawn with half as many segments so it stays narrow in the taskbar,
+    // and the Firecrawl credit block one more such row in both modes.
     let mut expected_segments = vec![10; 5 * 2 * 2 + 2 * 2];
-    expected_segments.extend([5; 2 * 2]);
+    expected_segments.extend([5; 2 * 2 + 2]);
+    expected_segments.sort_unstable();
     assert_eq!(segments, expected_segments);
     assert!(theme.surfaces[0]
         .children
@@ -2677,6 +2680,14 @@ fn the_classic_theme_carries_a_machine_load_row_behind_the_user_setting() {
     assert_eq!(omniroute.render.0, "display.omniroute");
     assert!(theme.uses_omniroute());
     assert!(theme.surfaces[0].width.0.contains("display.omniroute"));
+    let firecrawl = theme.surfaces[0]
+        .children
+        .iter()
+        .find(|object| object.id == "firecrawl-usage")
+        .expect("classic theme should carry the Firecrawl credit block");
+    assert_eq!(firecrawl.render.0, "display.firecrawl");
+    assert!(theme.uses_firecrawl());
+    assert!(theme.surfaces[0].width.0.contains("display.firecrawl"));
 
     // Turning the setting off has to take the row's width with it, otherwise
     // the widget keeps a gap in the taskbar where the row used to be.
@@ -2738,4 +2749,32 @@ fn only_a_theme_reading_omniroute_asks_for_health_checks() {
     theme.surfaces[0].render = Expression("services.omniroute.status == 1".into());
     assert!(theme.validate().is_empty());
     assert!(theme.uses_omniroute());
+}
+
+#[test]
+fn firecrawl_bindings_publish_used_credits_against_the_plan() {
+    let unchecked = DataContext::from_usage(None, &Canvas::default());
+    assert_eq!(unchecked.get("services.firecrawl.status"), Some(0.0));
+    assert_eq!(unchecked.get("display.firecrawl"), Some(0.0));
+
+    let usage = crate::firecrawl::CreditUsage {
+        status: 1,
+        remaining: 1760,
+        plan: 3000,
+    };
+    let context = DataContext::from_usage_with_runtime(
+        None,
+        &Canvas::default(),
+        ThemeRuntime::default()
+            .with_firecrawl(usage)
+            .with_firecrawl_shown(true),
+    );
+    assert_eq!(context.get("display.firecrawl"), Some(1.0));
+    assert_eq!(
+        format_template(
+            "{services.firecrawl.used:0}/{services.firecrawl.plan:0}",
+            &context
+        ),
+        "1240/3000"
+    );
 }

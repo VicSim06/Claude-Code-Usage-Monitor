@@ -19,7 +19,7 @@
         "offset_x": 0,
         "offset_y": 0
       },
-      "width": "42 + providers.count * (ceil(10 / max(1, providers.count)) * 11 - 1 + 4 + 62) + max(0, providers.count - 1) * 3 + (providers.opencode.enabled + providers.cursor.enabled) * 28 + display.system_metrics * (ceil(5 / max(1, providers.count)) * 11 - 1 + 4 + 58 + 3 + 128 + 3) + display.omniroute * (66 + 3)",
+      "width": "42 + providers.count * (ceil(10 / max(1, providers.count)) * 11 - 1 + 4 + 62) + max(0, providers.count - 1) * 3 + (providers.opencode.enabled + providers.cursor.enabled) * 28 + display.system_metrics * (ceil(5 / max(1, providers.count)) * 11 - 1 + 4 + 58 + 3 + 120 + 3) + display.omniroute * (66 + 3) + display.firecrawl * (120 + 3)",
       "height": "46",
       "mouse_events": {
         "right_click": "show_context_menu(\"classic-v1\")"
@@ -84,10 +84,315 @@
           }
         },
         {
+          "id": "provider-row",
+          "name": "Enabled providers",
+          "x": "10",
+          "width": "canvas.width - 42",
+          "height": "46",
+          "layout": "row",
+          "gap": "3"
+        },
+        {
+          "id": "system-metrics",
+          "name": "Machine load",
+          "render": "display.system_metrics",
+          "parent": "provider-row",
+          "width": "ceil(5 / max(1, providers.count)) * 11 - 1 + 4 + 58",
+          "height": "46"
+        },
+        {
+          "id": "system-cpu-segments-dark",
+          "name": "dark CPU segments",
+          "render": "system.dark",
+          "parent": "system-metrics",
+          "y": "5",
+          "width": "ceil(5 / max(1, providers.count)) * 11 - 1",
+          "height": "13",
+          "content": {
+            "type": "progress",
+            "value": "system.cpu.percentage",
+            "direction": "left_to_right",
+            "fill": {
+              "color": "#6E9FD8FF"
+            },
+            "track": {
+              "color": "#444444FF"
+            },
+            "corner_radius": "2",
+            "segments": 5,
+            "segments_expression": "ceil(5 / max(1, providers.count))",
+            "segment_gap": "1"
+          }
+        },
+        {
+          "id": "system-cpu-value-dark",
+          "name": "dark CPU value",
+          "render": "system.dark",
+          "parent": "system-metrics",
+          "x": "ceil(5 / max(1, providers.count)) * 11 - 1 + 4",
+          "y": "5",
+          "width": "58",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "CPU {system.cpu.percentage:0}%",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#9DC0E8FF"
+            }
+          }
+        },
+        {
+          "id": "system-cpu-segments-light",
+          "name": "light CPU segments",
+          "render": "1 - system.dark",
+          "parent": "system-metrics",
+          "y": "5",
+          "width": "ceil(5 / max(1, providers.count)) * 11 - 1",
+          "height": "13",
+          "content": {
+            "type": "progress",
+            "value": "system.cpu.percentage",
+            "direction": "left_to_right",
+            "fill": {
+              "color": "#3B6FA8FF"
+            },
+            "track": {
+              "color": "#AAAAAAFF"
+            },
+            "corner_radius": "2",
+            "segments": 5,
+            "segments_expression": "ceil(5 / max(1, providers.count))",
+            "segment_gap": "1"
+          }
+        },
+        {
+          "id": "system-cpu-value-light",
+          "name": "light CPU value",
+          "render": "1 - system.dark",
+          "parent": "system-metrics",
+          "x": "ceil(5 / max(1, providers.count)) * 11 - 1 + 4",
+          "y": "5",
+          "width": "58",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "CPU {system.cpu.percentage:0}%",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#2E5C8AFF"
+            }
+          }
+        },
+        {
+          "id": "system-memory-segments-dark",
+          "name": "dark memory segments",
+          "render": "system.dark",
+          "parent": "system-metrics",
+          "y": "28",
+          "width": "ceil(5 / max(1, providers.count)) * 11 - 1",
+          "height": "13",
+          "content": {
+            "type": "progress",
+            "value": "system.memory.percentage",
+            "direction": "left_to_right",
+            "fill": {
+              "color": "#58B09CFF"
+            },
+            "track": {
+              "color": "#444444FF"
+            },
+            "corner_radius": "2",
+            "segments": 5,
+            "segments_expression": "ceil(5 / max(1, providers.count))",
+            "segment_gap": "1"
+          }
+        },
+        {
+          "id": "system-memory-value-dark",
+          "name": "dark memory value",
+          "render": "system.dark",
+          "parent": "system-metrics",
+          "x": "ceil(5 / max(1, providers.count)) * 11 - 1 + 4",
+          "y": "28",
+          "width": "58",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "RAM {system.memory.percentage:0}%",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#7FC9B8FF"
+            }
+          }
+        },
+        {
+          "id": "system-memory-segments-light",
+          "name": "light memory segments",
+          "render": "1 - system.dark",
+          "parent": "system-metrics",
+          "y": "28",
+          "width": "ceil(5 / max(1, providers.count)) * 11 - 1",
+          "height": "13",
+          "content": {
+            "type": "progress",
+            "value": "system.memory.percentage",
+            "direction": "left_to_right",
+            "fill": {
+              "color": "#2E7D6BFF"
+            },
+            "track": {
+              "color": "#AAAAAAFF"
+            },
+            "corner_radius": "2",
+            "segments": 5,
+            "segments_expression": "ceil(5 / max(1, providers.count))",
+            "segment_gap": "1"
+          }
+        },
+        {
+          "id": "system-memory-value-light",
+          "name": "light memory value",
+          "render": "1 - system.dark",
+          "parent": "system-metrics",
+          "x": "ceil(5 / max(1, providers.count)) * 11 - 1 + 4",
+          "y": "28",
+          "width": "58",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "RAM {system.memory.percentage:0}%",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#216B5BFF"
+            }
+          }
+        },
+        {
+          "id": "system-network",
+          "name": "Network bandwidth",
+          "render": "display.system_metrics",
+          "parent": "provider-row",
+          "width": "120",
+          "height": "46"
+        },
+        {
+          "id": "system-network-type-dark",
+          "name": "dark network type",
+          "render": "system.dark",
+          "parent": "system-network",
+          "y": "5",
+          "width": "120",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "{system.network.type}",
+            "font_family": "Segoe UI",
+            "font_size": "11",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#B8B8B8FF"
+            }
+          },
+          "x": "0"
+        },
+        {
+          "id": "system-network-down-dark",
+          "name": "dark network down",
+          "render": "system.dark",
+          "parent": "system-network",
+          "x": "0",
+          "y": "28",
+          "width": "120",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "↓ {system.network.down_mbps:0.0}  ↑ {system.network.up_mbps:0.0} Mb/s",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#E0B47AFF"
+            }
+          }
+        },
+        {
+          "id": "system-network-type-light",
+          "name": "light network type",
+          "render": "1 - system.dark",
+          "parent": "system-network",
+          "y": "5",
+          "width": "120",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "{system.network.type}",
+            "font_family": "Segoe UI",
+            "font_size": "11",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#555555FF"
+            }
+          },
+          "x": "0"
+        },
+        {
+          "id": "system-network-down-light",
+          "name": "light network down",
+          "render": "1 - system.dark",
+          "parent": "system-network",
+          "x": "0",
+          "y": "28",
+          "width": "120",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "↓ {system.network.down_mbps:0.0}  ↑ {system.network.up_mbps:0.0} Mb/s",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#8A5A1EFF"
+            }
+          }
+        },
+        {
           "id": "session-label-dark",
           "name": "dark 5-hour label",
           "render": "system.dark",
-          "x": "13",
+          "x": "3",
           "y": "5",
           "width": "18",
           "height": "13",
@@ -103,13 +408,14 @@
             "color": {
               "color": "#888888FF"
             }
-          }
+          },
+          "parent": "window-labels"
         },
         {
           "id": "weekly-label-dark",
           "name": "dark 7-day label",
           "render": "system.dark * (1 - providers.opencode.enabled)",
-          "x": "13",
+          "x": "3",
           "y": "28",
           "width": "18",
           "height": "13",
@@ -125,13 +431,14 @@
             "color": {
               "color": "#888888FF"
             }
-          }
+          },
+          "parent": "window-labels"
         },
         {
           "id": "session-label-light",
           "name": "light 5-hour label",
           "render": "1 - system.dark",
-          "x": "13",
+          "x": "3",
           "y": "5",
           "width": "18",
           "height": "13",
@@ -147,13 +454,14 @@
             "color": {
               "color": "#404040FF"
             }
-          }
+          },
+          "parent": "window-labels"
         },
         {
           "id": "weekly-label-light",
           "name": "light 7-day label",
           "render": "(1 - system.dark) * (1 - providers.opencode.enabled)",
-          "x": "13",
+          "x": "3",
           "y": "28",
           "width": "18",
           "height": "13",
@@ -169,211 +477,16 @@
             "color": {
               "color": "#404040FF"
             }
-          }
-        },
-        {
-          "id": "cursor-provider",
-          "name": "Cursor provider",
-          "render": "providers.cursor.enabled",
-          "parent": "provider-row",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4 + 90",
-          "height": "46"
-        },
-        {
-          "id": "cursor-session-segments-dark",
-          "name": "dark Cursor Auto segments",
-          "render": "system.dark",
-          "parent": "cursor-provider",
-          "y": "5",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
-          "height": "13",
-          "content": {
-            "type": "progress",
-            "value": "cursor.session.display",
-            "direction": "left_to_right",
-            "fill": {
-              "color": "#F5F5F5FF"
-            },
-            "track": {
-              "color": "#444444FF"
-            },
-            "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
-            "segment_gap": "1"
-          }
-        },
-        {
-          "id": "cursor-session-value-dark",
-          "name": "dark Cursor Auto value",
-          "render": "system.dark",
-          "parent": "cursor-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
-          "y": "5",
-          "width": "90",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "{i18n.cursor_auto_window} {cursor.session.display:usage_line}",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "medium",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#E0E0E0FF"
-            }
-          }
-        },
-        {
-          "id": "cursor-session-segments-light",
-          "name": "light Cursor Auto segments",
-          "render": "1 - system.dark",
-          "parent": "cursor-provider",
-          "y": "5",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
-          "height": "13",
-          "content": {
-            "type": "progress",
-            "value": "cursor.session.display",
-            "direction": "left_to_right",
-            "fill": {
-              "color": "#1A1A1AFF"
-            },
-            "track": {
-              "color": "#AAAAAAFF"
-            },
-            "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
-            "segment_gap": "1"
-          }
-        },
-        {
-          "id": "cursor-session-value-light",
-          "name": "light Cursor Auto value",
-          "render": "1 - system.dark",
-          "parent": "cursor-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
-          "y": "5",
-          "width": "90",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "{i18n.cursor_auto_window} {cursor.session.display:usage_line}",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "medium",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#1A1A1AFF"
-            }
-          }
-        },
-        {
-          "id": "cursor-weekly-segments-dark",
-          "name": "dark Cursor API segments",
-          "render": "system.dark",
-          "parent": "cursor-provider",
-          "y": "28",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
-          "height": "13",
-          "content": {
-            "type": "progress",
-            "value": "cursor.weekly.display",
-            "direction": "left_to_right",
-            "fill": {
-              "color": "#F5F5F5FF"
-            },
-            "track": {
-              "color": "#444444FF"
-            },
-            "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
-            "segment_gap": "1"
-          }
-        },
-        {
-          "id": "cursor-weekly-value-dark",
-          "name": "dark Cursor API value",
-          "render": "system.dark",
-          "parent": "cursor-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
-          "y": "28",
-          "width": "90",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "{i18n.cursor_api_window} {cursor.weekly.display:usage_line}",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "medium",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#E0E0E0FF"
-            }
-          }
-        },
-        {
-          "id": "cursor-weekly-segments-light",
-          "name": "light Cursor API segments",
-          "render": "1 - system.dark",
-          "parent": "cursor-provider",
-          "y": "28",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
-          "height": "13",
-          "content": {
-            "type": "progress",
-            "value": "cursor.weekly.display",
-            "direction": "left_to_right",
-            "fill": {
-              "color": "#1A1A1AFF"
-            },
-            "track": {
-              "color": "#AAAAAAFF"
-            },
-            "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
-            "segment_gap": "1"
-          }
-        },
-        {
-          "id": "cursor-weekly-value-light",
-          "name": "light Cursor API value",
-          "render": "1 - system.dark",
-          "parent": "cursor-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
-          "y": "28",
-          "width": "90",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "{i18n.cursor_api_window} {cursor.weekly.display:usage_line}",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "medium",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#1A1A1AFF"
-            }
-          }
+          },
+          "parent": "window-labels"
         },
         {
           "id": "opencode-long-label-dark",
           "name": "dark OpenCode 7-day or 30-day label",
           "render": "system.dark * providers.opencode.enabled",
-          "x": "8",
+          "x": "0",
           "y": "28",
-          "width": "30",
+          "width": "28",
           "height": "13",
           "content": {
             "type": "text",
@@ -387,15 +500,16 @@
             "color": {
               "color": "#888888FF"
             }
-          }
+          },
+          "parent": "window-labels"
         },
         {
           "id": "opencode-long-label-light",
           "name": "light OpenCode 7-day or 30-day label",
           "render": "(1 - system.dark) * providers.opencode.enabled",
-          "x": "8",
+          "x": "0",
           "y": "28",
-          "width": "30",
+          "width": "28",
           "height": "13",
           "content": {
             "type": "text",
@@ -409,16 +523,15 @@
             "color": {
               "color": "#404040FF"
             }
-          }
+          },
+          "parent": "window-labels"
         },
         {
-          "id": "provider-row",
-          "name": "Enabled providers",
-          "x": "41",
-          "width": "canvas.width - 42",
-          "height": "46",
-          "layout": "row",
-          "gap": "3"
+          "id": "window-labels",
+          "name": "Usage window labels",
+          "parent": "provider-row",
+          "width": "28",
+          "height": "46"
         },
         {
           "id": "claude-provider",
@@ -617,6 +730,106 @@
           }
         },
         {
+          "id": "claude-credits-segments-dark",
+          "name": "dark claude credit overlay",
+          "render": "(system.dark) && claude.credits.available",
+          "parent": "claude-provider",
+          "y": "28",
+          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "height": "13",
+          "content": {
+            "type": "progress",
+            "value": "claude.credits.display",
+            "direction": "left_to_right",
+            "fill": {
+              "color": "#F5A623FF",
+              "opacity": "1"
+            },
+            "track": {
+              "color": "#00000000",
+              "opacity": "0"
+            },
+            "corner_radius": "2",
+            "segments": 10,
+            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segment_gap": "1"
+          }
+        },
+        {
+          "id": "claude-credits-value-dark",
+          "name": "dark claude credit balance",
+          "render": "(system.dark) && claude.credits.available",
+          "parent": "claude-provider",
+          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "y": "28",
+          "width": "62",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "${claude.credits.balance:0.00}",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#F5A623FF",
+              "opacity": "1"
+            }
+          }
+        },
+        {
+          "id": "claude-credits-segments-light",
+          "name": "light claude credit overlay",
+          "render": "(1 - system.dark) && claude.credits.available",
+          "parent": "claude-provider",
+          "y": "28",
+          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "height": "13",
+          "content": {
+            "type": "progress",
+            "value": "claude.credits.display",
+            "direction": "left_to_right",
+            "fill": {
+              "color": "#C77700FF",
+              "opacity": "1"
+            },
+            "track": {
+              "color": "#00000000",
+              "opacity": "0"
+            },
+            "corner_radius": "2",
+            "segments": 10,
+            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segment_gap": "1"
+          }
+        },
+        {
+          "id": "claude-credits-value-light",
+          "name": "light claude credit balance",
+          "render": "(1 - system.dark) && claude.credits.available",
+          "parent": "claude-provider",
+          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "y": "28",
+          "width": "62",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "${claude.credits.balance:0.00}",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#C77700FF",
+              "opacity": "1"
+            }
+          }
+        },
+        {
           "id": "codex-provider",
           "name": "Codex provider",
           "render": "providers.codex.enabled",
@@ -809,6 +1022,106 @@
             "align": "left",
             "color": {
               "color": "#1F1F1FFF"
+            }
+          }
+        },
+        {
+          "id": "codex-credits-segments-dark",
+          "name": "dark codex credit overlay",
+          "render": "(system.dark) && codex.credits.available",
+          "parent": "codex-provider",
+          "y": "28",
+          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "height": "13",
+          "content": {
+            "type": "progress",
+            "value": "codex.credits.display",
+            "direction": "left_to_right",
+            "fill": {
+              "color": "#F5A623FF",
+              "opacity": "1"
+            },
+            "track": {
+              "color": "#00000000",
+              "opacity": "0"
+            },
+            "corner_radius": "2",
+            "segments": 10,
+            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segment_gap": "1"
+          }
+        },
+        {
+          "id": "codex-credits-value-dark",
+          "name": "dark codex credit balance",
+          "render": "(system.dark) && codex.credits.available",
+          "parent": "codex-provider",
+          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "y": "28",
+          "width": "62",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "${codex.credits.balance:0.00}",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#F5A623FF",
+              "opacity": "1"
+            }
+          }
+        },
+        {
+          "id": "codex-credits-segments-light",
+          "name": "light codex credit overlay",
+          "render": "(1 - system.dark) && codex.credits.available",
+          "parent": "codex-provider",
+          "y": "28",
+          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "height": "13",
+          "content": {
+            "type": "progress",
+            "value": "codex.credits.display",
+            "direction": "left_to_right",
+            "fill": {
+              "color": "#C77700FF",
+              "opacity": "1"
+            },
+            "track": {
+              "color": "#00000000",
+              "opacity": "0"
+            },
+            "corner_radius": "2",
+            "segments": 10,
+            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segment_gap": "1"
+          }
+        },
+        {
+          "id": "codex-credits-value-light",
+          "name": "light codex credit balance",
+          "render": "(1 - system.dark) && codex.credits.available",
+          "parent": "codex-provider",
+          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "y": "28",
+          "width": "62",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "${codex.credits.balance:0.00}",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#C77700FF",
+              "opacity": "1"
             }
           }
         },
@@ -1205,249 +1518,49 @@
           }
         },
         {
-          "id": "claude-credits-segments-dark",
-          "name": "dark claude credit overlay",
-          "render": "(system.dark) && claude.credits.available",
-          "parent": "claude-provider",
-          "y": "28",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
-          "height": "13",
-          "content": {
-            "type": "progress",
-            "value": "claude.credits.display",
-            "direction": "left_to_right",
-            "fill": {
-              "color": "#F5A623FF",
-              "opacity": "1"
-            },
-            "track": {
-              "color": "#00000000",
-              "opacity": "0"
-            },
-            "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
-            "segment_gap": "1"
-          }
-        },
-        {
-          "id": "claude-credits-value-dark",
-          "name": "dark claude credit balance",
-          "render": "(system.dark) && claude.credits.available",
-          "parent": "claude-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
-          "y": "28",
-          "width": "62",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "${claude.credits.balance:0.00}",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "medium",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#F5A623FF",
-              "opacity": "1"
-            }
-          }
-        },
-        {
-          "id": "claude-credits-segments-light",
-          "name": "light claude credit overlay",
-          "render": "(1 - system.dark) && claude.credits.available",
-          "parent": "claude-provider",
-          "y": "28",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
-          "height": "13",
-          "content": {
-            "type": "progress",
-            "value": "claude.credits.display",
-            "direction": "left_to_right",
-            "fill": {
-              "color": "#C77700FF",
-              "opacity": "1"
-            },
-            "track": {
-              "color": "#00000000",
-              "opacity": "0"
-            },
-            "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
-            "segment_gap": "1"
-          }
-        },
-        {
-          "id": "claude-credits-value-light",
-          "name": "light claude credit balance",
-          "render": "(1 - system.dark) && claude.credits.available",
-          "parent": "claude-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
-          "y": "28",
-          "width": "62",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "${claude.credits.balance:0.00}",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "medium",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#C77700FF",
-              "opacity": "1"
-            }
-          }
-        },
-        {
-          "id": "codex-credits-segments-dark",
-          "name": "dark codex credit overlay",
-          "render": "(system.dark) && codex.credits.available",
-          "parent": "codex-provider",
-          "y": "28",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
-          "height": "13",
-          "content": {
-            "type": "progress",
-            "value": "codex.credits.display",
-            "direction": "left_to_right",
-            "fill": {
-              "color": "#F5A623FF",
-              "opacity": "1"
-            },
-            "track": {
-              "color": "#00000000",
-              "opacity": "0"
-            },
-            "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
-            "segment_gap": "1"
-          }
-        },
-        {
-          "id": "codex-credits-value-dark",
-          "name": "dark codex credit balance",
-          "render": "(system.dark) && codex.credits.available",
-          "parent": "codex-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
-          "y": "28",
-          "width": "62",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "${codex.credits.balance:0.00}",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "medium",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#F5A623FF",
-              "opacity": "1"
-            }
-          }
-        },
-        {
-          "id": "codex-credits-segments-light",
-          "name": "light codex credit overlay",
-          "render": "(1 - system.dark) && codex.credits.available",
-          "parent": "codex-provider",
-          "y": "28",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
-          "height": "13",
-          "content": {
-            "type": "progress",
-            "value": "codex.credits.display",
-            "direction": "left_to_right",
-            "fill": {
-              "color": "#C77700FF",
-              "opacity": "1"
-            },
-            "track": {
-              "color": "#00000000",
-              "opacity": "0"
-            },
-            "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
-            "segment_gap": "1"
-          }
-        },
-        {
-          "id": "codex-credits-value-light",
-          "name": "light codex credit balance",
-          "render": "(1 - system.dark) && codex.credits.available",
-          "parent": "codex-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
-          "y": "28",
-          "width": "62",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "${codex.credits.balance:0.00}",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "medium",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#C77700FF",
-              "opacity": "1"
-            }
-          }
-        },
-        {
-          "id": "system-metrics",
-          "name": "Machine load",
-          "render": "display.system_metrics",
+          "id": "cursor-provider",
+          "name": "Cursor provider",
+          "render": "providers.cursor.enabled",
           "parent": "provider-row",
-          "width": "ceil(5 / max(1, providers.count)) * 11 - 1 + 4 + 58",
+          "width": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4 + 90",
           "height": "46"
         },
         {
-          "id": "system-cpu-segments-dark",
-          "name": "dark CPU segments",
+          "id": "cursor-session-segments-dark",
+          "name": "dark Cursor Auto segments",
           "render": "system.dark",
-          "parent": "system-metrics",
+          "parent": "cursor-provider",
           "y": "5",
-          "width": "ceil(5 / max(1, providers.count)) * 11 - 1",
+          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
           "height": "13",
           "content": {
             "type": "progress",
-            "value": "system.cpu.percentage",
+            "value": "cursor.session.display",
             "direction": "left_to_right",
             "fill": {
-              "color": "#6E9FD8FF"
+              "color": "#F5F5F5FF"
             },
             "track": {
               "color": "#444444FF"
             },
             "corner_radius": "2",
-            "segments": 5,
-            "segments_expression": "ceil(5 / max(1, providers.count))",
+            "segments": 10,
+            "segments_expression": "ceil(10 / max(1, providers.count))",
             "segment_gap": "1"
           }
         },
         {
-          "id": "system-cpu-value-dark",
-          "name": "dark CPU value",
+          "id": "cursor-session-value-dark",
+          "name": "dark Cursor Auto value",
           "render": "system.dark",
-          "parent": "system-metrics",
-          "x": "ceil(5 / max(1, providers.count)) * 11 - 1 + 4",
+          "parent": "cursor-provider",
+          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
           "y": "5",
-          "width": "58",
+          "width": "90",
           "height": "13",
           "content": {
             "type": "text",
-            "template": "CPU {system.cpu.percentage:0}%",
+            "template": "{i18n.cursor_auto_window} {cursor.session.display:usage_line}",
             "font_family": "Segoe UI",
             "font_size": "12",
             "weight": "medium",
@@ -1455,46 +1568,46 @@
             "contrast": "1",
             "align": "left",
             "color": {
-              "color": "#9DC0E8FF"
+              "color": "#E0E0E0FF"
             }
           }
         },
         {
-          "id": "system-cpu-segments-light",
-          "name": "light CPU segments",
+          "id": "cursor-session-segments-light",
+          "name": "light Cursor Auto segments",
           "render": "1 - system.dark",
-          "parent": "system-metrics",
+          "parent": "cursor-provider",
           "y": "5",
-          "width": "ceil(5 / max(1, providers.count)) * 11 - 1",
+          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
           "height": "13",
           "content": {
             "type": "progress",
-            "value": "system.cpu.percentage",
+            "value": "cursor.session.display",
             "direction": "left_to_right",
             "fill": {
-              "color": "#3B6FA8FF"
+              "color": "#1A1A1AFF"
             },
             "track": {
               "color": "#AAAAAAFF"
             },
             "corner_radius": "2",
-            "segments": 5,
-            "segments_expression": "ceil(5 / max(1, providers.count))",
+            "segments": 10,
+            "segments_expression": "ceil(10 / max(1, providers.count))",
             "segment_gap": "1"
           }
         },
         {
-          "id": "system-cpu-value-light",
-          "name": "light CPU value",
+          "id": "cursor-session-value-light",
+          "name": "light Cursor Auto value",
           "render": "1 - system.dark",
-          "parent": "system-metrics",
-          "x": "ceil(5 / max(1, providers.count)) * 11 - 1 + 4",
+          "parent": "cursor-provider",
+          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
           "y": "5",
-          "width": "58",
+          "width": "90",
           "height": "13",
           "content": {
             "type": "text",
-            "template": "CPU {system.cpu.percentage:0}%",
+            "template": "{i18n.cursor_auto_window} {cursor.session.display:usage_line}",
             "font_family": "Segoe UI",
             "font_size": "12",
             "weight": "medium",
@@ -1502,46 +1615,46 @@
             "contrast": "1",
             "align": "left",
             "color": {
-              "color": "#2E5C8AFF"
+              "color": "#1A1A1AFF"
             }
           }
         },
         {
-          "id": "system-memory-segments-dark",
-          "name": "dark memory segments",
+          "id": "cursor-weekly-segments-dark",
+          "name": "dark Cursor API segments",
           "render": "system.dark",
-          "parent": "system-metrics",
+          "parent": "cursor-provider",
           "y": "28",
-          "width": "ceil(5 / max(1, providers.count)) * 11 - 1",
+          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
           "height": "13",
           "content": {
             "type": "progress",
-            "value": "system.memory.percentage",
+            "value": "cursor.weekly.display",
             "direction": "left_to_right",
             "fill": {
-              "color": "#58B09CFF"
+              "color": "#F5F5F5FF"
             },
             "track": {
               "color": "#444444FF"
             },
             "corner_radius": "2",
-            "segments": 5,
-            "segments_expression": "ceil(5 / max(1, providers.count))",
+            "segments": 10,
+            "segments_expression": "ceil(10 / max(1, providers.count))",
             "segment_gap": "1"
           }
         },
         {
-          "id": "system-memory-value-dark",
-          "name": "dark memory value",
+          "id": "cursor-weekly-value-dark",
+          "name": "dark Cursor API value",
           "render": "system.dark",
-          "parent": "system-metrics",
-          "x": "ceil(5 / max(1, providers.count)) * 11 - 1 + 4",
+          "parent": "cursor-provider",
+          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
           "y": "28",
-          "width": "58",
+          "width": "90",
           "height": "13",
           "content": {
             "type": "text",
-            "template": "RAM {system.memory.percentage:0}%",
+            "template": "{i18n.cursor_api_window} {cursor.weekly.display:usage_line}",
             "font_family": "Segoe UI",
             "font_size": "12",
             "weight": "medium",
@@ -1549,46 +1662,46 @@
             "contrast": "1",
             "align": "left",
             "color": {
-              "color": "#7FC9B8FF"
+              "color": "#E0E0E0FF"
             }
           }
         },
         {
-          "id": "system-memory-segments-light",
-          "name": "light memory segments",
+          "id": "cursor-weekly-segments-light",
+          "name": "light Cursor API segments",
           "render": "1 - system.dark",
-          "parent": "system-metrics",
+          "parent": "cursor-provider",
           "y": "28",
-          "width": "ceil(5 / max(1, providers.count)) * 11 - 1",
+          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
           "height": "13",
           "content": {
             "type": "progress",
-            "value": "system.memory.percentage",
+            "value": "cursor.weekly.display",
             "direction": "left_to_right",
             "fill": {
-              "color": "#2E7D6BFF"
+              "color": "#1A1A1AFF"
             },
             "track": {
               "color": "#AAAAAAFF"
             },
             "corner_radius": "2",
-            "segments": 5,
-            "segments_expression": "ceil(5 / max(1, providers.count))",
+            "segments": 10,
+            "segments_expression": "ceil(10 / max(1, providers.count))",
             "segment_gap": "1"
           }
         },
         {
-          "id": "system-memory-value-light",
-          "name": "light memory value",
+          "id": "cursor-weekly-value-light",
+          "name": "light Cursor API value",
           "render": "1 - system.dark",
-          "parent": "system-metrics",
-          "x": "ceil(5 / max(1, providers.count)) * 11 - 1 + 4",
+          "parent": "cursor-provider",
+          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
           "y": "28",
-          "width": "58",
+          "width": "90",
           "height": "13",
           "content": {
             "type": "text",
-            "template": "RAM {system.memory.percentage:0}%",
+            "template": "{i18n.cursor_api_window} {cursor.weekly.display:usage_line}",
             "font_family": "Segoe UI",
             "font_size": "12",
             "weight": "medium",
@@ -1596,151 +1709,7 @@
             "contrast": "1",
             "align": "left",
             "color": {
-              "color": "#216B5BFF"
-            }
-          }
-        },
-        {
-          "id": "system-network",
-          "name": "Network bandwidth",
-          "render": "display.system_metrics",
-          "parent": "provider-row",
-          "width": "128",
-          "height": "46"
-        },
-        {
-          "id": "system-network-type-dark",
-          "name": "dark network type",
-          "render": "system.dark",
-          "parent": "system-network",
-          "y": "16",
-          "width": "46",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "{system.network.type}",
-            "font_family": "Segoe UI",
-            "font_size": "11",
-            "weight": "medium",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#B8B8B8FF"
-            }
-          }
-        },
-        {
-          "id": "system-network-down-dark",
-          "name": "dark network down",
-          "render": "system.dark",
-          "parent": "system-network",
-          "x": "50",
-          "y": "5",
-          "width": "78",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "↓ {system.network.down_mbps:0.0} Mb/s",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "medium",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#E0B47AFF"
-            }
-          }
-        },
-        {
-          "id": "system-network-up-dark",
-          "name": "dark network up",
-          "render": "system.dark",
-          "parent": "system-network",
-          "x": "50",
-          "y": "28",
-          "width": "78",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "↑ {system.network.up_mbps:0.0} Mb/s",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "medium",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#E0B47AFF"
-            }
-          }
-        },
-        {
-          "id": "system-network-type-light",
-          "name": "light network type",
-          "render": "1 - system.dark",
-          "parent": "system-network",
-          "y": "16",
-          "width": "46",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "{system.network.type}",
-            "font_family": "Segoe UI",
-            "font_size": "11",
-            "weight": "medium",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#555555FF"
-            }
-          }
-        },
-        {
-          "id": "system-network-down-light",
-          "name": "light network down",
-          "render": "1 - system.dark",
-          "parent": "system-network",
-          "x": "50",
-          "y": "5",
-          "width": "78",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "↓ {system.network.down_mbps:0.0} Mb/s",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "medium",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#8A5A1EFF"
-            }
-          }
-        },
-        {
-          "id": "system-network-up-light",
-          "name": "light network up",
-          "render": "1 - system.dark",
-          "parent": "system-network",
-          "x": "50",
-          "y": "28",
-          "width": "78",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "↑ {system.network.up_mbps:0.0} Mb/s",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "medium",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#8A5A1EFF"
+              "color": "#1A1A1AFF"
             }
           }
         },
@@ -2013,6 +1982,198 @@
           "x": "14",
           "y": "28",
           "width": "52",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "--",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#333333FF"
+            }
+          }
+        },
+        {
+          "id": "firecrawl-usage",
+          "name": "Firecrawl credit usage",
+          "render": "display.firecrawl",
+          "parent": "provider-row",
+          "width": "120",
+          "height": "46"
+        },
+        {
+          "id": "firecrawl-label-dark",
+          "name": "dark Firecrawl label",
+          "render": "system.dark",
+          "parent": "firecrawl-usage",
+          "x": "0",
+          "y": "5",
+          "width": "120",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "Firecrawl",
+            "font_family": "Segoe UI",
+            "font_size": "11",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#B8B8B8FF"
+            }
+          }
+        },
+        {
+          "id": "firecrawl-segments-dark",
+          "name": "dark Firecrawl segments",
+          "render": "system.dark",
+          "parent": "firecrawl-usage",
+          "y": "28",
+          "width": "5 * 11 - 1",
+          "height": "13",
+          "content": {
+            "type": "progress",
+            "value": "services.firecrawl.percentage",
+            "direction": "left_to_right",
+            "fill": {
+              "color": "#F26B3AFF"
+            },
+            "track": {
+              "color": "#444444FF"
+            },
+            "corner_radius": "2",
+            "segments": 5,
+            "segment_gap": "1"
+          }
+        },
+        {
+          "id": "firecrawl-value-dark",
+          "name": "dark Firecrawl value",
+          "render": "system.dark && services.firecrawl.status == 1",
+          "parent": "firecrawl-usage",
+          "x": "5 * 11 - 1 + 4",
+          "y": "28",
+          "width": "62",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "{services.firecrawl.used:0}/{services.firecrawl.plan:0}",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#D0D0D0FF"
+            }
+          }
+        },
+        {
+          "id": "firecrawl-pending-dark",
+          "name": "dark Firecrawl pending",
+          "render": "system.dark && services.firecrawl.status != 1",
+          "parent": "firecrawl-usage",
+          "x": "5 * 11 - 1 + 4",
+          "y": "28",
+          "width": "62",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "--",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#D0D0D0FF"
+            }
+          }
+        },
+        {
+          "id": "firecrawl-label-light",
+          "name": "light Firecrawl label",
+          "render": "1 - system.dark",
+          "parent": "firecrawl-usage",
+          "x": "0",
+          "y": "5",
+          "width": "120",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "Firecrawl",
+            "font_family": "Segoe UI",
+            "font_size": "11",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#555555FF"
+            }
+          }
+        },
+        {
+          "id": "firecrawl-segments-light",
+          "name": "light Firecrawl segments",
+          "render": "1 - system.dark",
+          "parent": "firecrawl-usage",
+          "y": "28",
+          "width": "5 * 11 - 1",
+          "height": "13",
+          "content": {
+            "type": "progress",
+            "value": "services.firecrawl.percentage",
+            "direction": "left_to_right",
+            "fill": {
+              "color": "#F26B3AFF"
+            },
+            "track": {
+              "color": "#AAAAAAFF"
+            },
+            "corner_radius": "2",
+            "segments": 5,
+            "segment_gap": "1"
+          }
+        },
+        {
+          "id": "firecrawl-value-light",
+          "name": "light Firecrawl value",
+          "render": "1 - system.dark && services.firecrawl.status == 1",
+          "parent": "firecrawl-usage",
+          "x": "5 * 11 - 1 + 4",
+          "y": "28",
+          "width": "62",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "{services.firecrawl.used:0}/{services.firecrawl.plan:0}",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#333333FF"
+            }
+          }
+        },
+        {
+          "id": "firecrawl-pending-light",
+          "name": "light Firecrawl pending",
+          "render": "1 - system.dark && services.firecrawl.status != 1",
+          "parent": "firecrawl-usage",
+          "x": "5 * 11 - 1 + 4",
+          "y": "28",
+          "width": "62",
           "height": "13",
           "content": {
             "type": "text",

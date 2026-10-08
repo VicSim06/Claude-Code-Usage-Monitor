@@ -6,6 +6,7 @@ mod context_menu;
 mod dashboard;
 mod desktop_compositor;
 mod diagnose;
+mod firecrawl;
 mod font_catalog;
 mod localization;
 mod models;

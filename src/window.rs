@@ -26,6 +26,7 @@ use crate::app_settings::{
 };
 use crate::context_menu::{self, ContextMenuAction, ContextMenuItem, ContextMenuItemKind};
 use crate::diagnose;
+use crate::firecrawl::CreditUsage;
 use crate::localization::{self, LanguageId, Strings};
 use crate::models::AppUsageData;
 use crate::native_interop::{
@@ -144,6 +145,11 @@ struct AppState {
     theme_uses_omniroute: bool,
     show_omniroute: bool,
     omniroute: ServiceHealth,
+    /// Same gating again for `services.firecrawl.*`; `show_firecrawl` already
+    /// folds in whether an API key is set.
+    theme_uses_firecrawl: bool,
+    show_firecrawl: bool,
+    firecrawl: CreditUsage,
     mirror_hwnds: Vec<SendHwnd>,
     desktop_hwnds: Vec<Option<SendHwnd>>,
     mouse_action_overrides: HashMap<MouseActionOverrideKey, theme_engine::Expression>,
@@ -159,6 +165,10 @@ impl AppState {
 
     fn wants_omniroute(&self) -> bool {
         self.theme_uses_omniroute && self.show_omniroute
+    }
+
+    fn wants_firecrawl(&self) -> bool {
+        self.theme_uses_firecrawl && self.show_firecrawl
     }
 }
 
@@ -617,6 +627,8 @@ fn theme_runtime_from_state(state: &AppState) -> ThemeRuntime {
         .with_system_metrics_shown(state.show_system_metrics)
         .with_omniroute(state.omniroute)
         .with_omniroute_shown(state.show_omniroute)
+        .with_firecrawl(state.firecrawl)
+        .with_firecrawl_shown(state.show_firecrawl)
 }
 
 /// A transient outage can keep presenting the last real reading while its
@@ -1561,6 +1573,7 @@ fn apply_custom_theme(
     let tray_theme_uses_current_time = theme_tray_uses_current_time(&loaded);
     let theme_uses_system_metrics = loaded.uses_system_metrics();
     let theme_uses_omniroute = loaded.uses_omniroute();
+    let theme_uses_firecrawl = loaded.uses_firecrawl();
     let old_hook = {
         let mut state = lock_state();
         let Some(state) = state.as_mut() else {
@@ -1572,6 +1585,7 @@ fn apply_custom_theme(
         state.tray_theme_uses_current_time = tray_theme_uses_current_time;
         state.theme_uses_system_metrics = theme_uses_system_metrics;
         state.theme_uses_omniroute = theme_uses_omniroute;
+        state.theme_uses_firecrawl = theme_uses_firecrawl;
         state.mouse_action_overrides.clear();
         state.hovered_mouse_layer = None;
         state.pending_mouse_click = None;
@@ -2037,6 +2051,9 @@ pub fn run() {
         let theme_uses_omniroute = active_theme
             .as_ref()
             .is_some_and(ThemeDocument::uses_omniroute);
+        let theme_uses_firecrawl = active_theme
+            .as_ref()
+            .is_some_and(ThemeDocument::uses_firecrawl);
         if let Some(path) = &active_theme_path {
             let path = path.to_string_lossy().into_owned();
             if settings.active_theme_path.as_deref() != Some(path.as_str())
@@ -2164,6 +2181,9 @@ pub fn run() {
                 theme_uses_omniroute,
                 show_omniroute: settings.show_omniroute,
                 omniroute: ServiceHealth::default(),
+                theme_uses_firecrawl,
+                show_firecrawl: settings.show_firecrawl && crate::firecrawl::configured(),
+                firecrawl: CreditUsage::default(),
                 mirror_hwnds: Vec::new(),
                 desktop_hwnds: Vec::new(),
                 mouse_action_overrides: HashMap::new(),
@@ -2811,7 +2831,7 @@ fn schedule_system_metrics_timer() {
         return;
     };
     let hwnd = s.hwnd.to_hwnd();
-    if !(s.wants_system_metrics() || s.wants_omniroute()) {
+    if !(s.wants_system_metrics() || s.wants_omniroute() || s.wants_firecrawl()) {
         unsafe {
             let _ = KillTimer(Some(hwnd), TIMER_SYSTEM_METRICS);
         }
@@ -2840,6 +2860,9 @@ fn refresh_system_metrics() {
     if s.wants_omniroute() {
         // Never blocks: the HTTP check runs on its own thread.
         s.omniroute = crate::omniroute::latest();
+    }
+    if s.wants_firecrawl() {
+        s.firecrawl = crate::firecrawl::latest();
     }
 }
 
@@ -2898,6 +2921,7 @@ fn reload_external_settings(hwnd: HWND) {
         state.poll_interval_ms = settings.poll_interval_ms;
         state.show_system_metrics = settings.show_system_metrics;
         state.show_omniroute = settings.show_omniroute;
+        state.show_firecrawl = settings.show_firecrawl && crate::firecrawl::configured();
         state.system_metrics_interval_ms = settings.system_metrics_interval_ms;
         state.providers = settings.enabled_providers();
         state.usage_countdown = settings.usage_countdown;

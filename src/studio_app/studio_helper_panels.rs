@@ -100,6 +100,24 @@ pub(super) const TEXT_TEMPLATE_VALUES: &[TextTemplateValue] = &[
         kind: TextTemplateValueKind::Number,
     },
     TextTemplateValue {
+        group: "System",
+        label: "Firecrawl credits used",
+        expression: "services.firecrawl.used",
+        kind: TextTemplateValueKind::Number,
+    },
+    TextTemplateValue {
+        group: "System",
+        label: "Firecrawl plan credits",
+        expression: "services.firecrawl.plan",
+        kind: TextTemplateValueKind::Number,
+    },
+    TextTemplateValue {
+        group: "System",
+        label: "Firecrawl credits remaining",
+        expression: "services.firecrawl.remaining",
+        kind: TextTemplateValueKind::Number,
+    },
+    TextTemplateValue {
         group: "General",
         label: "Enabled provider count",
         expression: "providers.count",
@@ -1364,6 +1382,11 @@ pub(super) fn expression_variables_panel(
                     "system.network.kind",
                     "services.omniroute.status",
                     "services.omniroute.latency_ms",
+                    "services.firecrawl.status",
+                    "services.firecrawl.used",
+                    "services.firecrawl.plan",
+                    "services.firecrawl.remaining",
+                    "services.firecrawl.percentage",
                 ];
                 expression_variable_group(
                     ui,

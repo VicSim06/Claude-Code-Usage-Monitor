@@ -75,6 +75,21 @@ impl StudioApp {
                 setting_separator(ui);
                 setting_row(
                     ui,
+                    language.text("Firecrawl credits"),
+                    language.text("Show Firecrawl credit usage (needs FIRECRAWL_API_KEY)"),
+                    |ui| {
+                        if Toggle::new(&mut self.settings.show_firecrawl)
+                            .labels(language.text("Enabled"), language.text("Disabled"))
+                            .show(ui)
+                            .changed()
+                        {
+                            changed = true;
+                        }
+                    },
+                );
+                setting_separator(ui);
+                setting_row(
+                    ui,
                     language.text("Sampling interval"),
                     language.text("How often CPU and memory are re-read"),
                     |ui| {

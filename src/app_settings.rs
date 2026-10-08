@@ -59,6 +59,10 @@ pub struct SettingsFile {
     /// Show the local OmniRoute gateway's health in themes that carry it.
     #[serde(default = "default_true")]
     pub show_omniroute: bool,
+    /// Show Firecrawl credit usage in themes that carry it. Only takes effect
+    /// when `FIRECRAWL_API_KEY` is set.
+    #[serde(default = "default_true")]
+    pub show_firecrawl: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub language: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -128,6 +132,7 @@ impl Default for SettingsFile {
             show_system_metrics: true,
             system_metrics_interval_ms: default_system_metrics_interval(),
             show_omniroute: true,
+            show_firecrawl: true,
             language: None,
             last_update_check_unix: None,
             show_claude_code: true,
