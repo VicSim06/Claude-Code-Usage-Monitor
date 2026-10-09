@@ -32,11 +32,23 @@ impl StudioApp {
             .with_system_metrics(crate::system_metrics::shared_sample())
             .with_system_metrics_shown(self.settings.show_system_metrics)
             .with_omniroute(if self.theme.uses_omniroute() {
-                crate::omniroute::latest()
+                crate::local_services::OMNIROUTE.latest()
             } else {
                 Default::default()
             })
             .with_omniroute_shown(self.settings.show_omniroute)
+            .with_firecrawl(if self.theme.uses_firecrawl() {
+                crate::firecrawl::latest()
+            } else {
+                Default::default()
+            })
+            .with_firecrawl_shown(self.settings.show_firecrawl && crate::firecrawl::configured())
+            .with_devreport(if self.theme.uses_devreport() {
+                crate::local_services::DEVREPORT.latest()
+            } else {
+                Default::default()
+            })
+            .with_devreport_shown(self.settings.show_devreport)
     }
 
     pub(super) fn theme_runtime_for_surface(&self, surface_index: usize) -> ThemeRuntime {

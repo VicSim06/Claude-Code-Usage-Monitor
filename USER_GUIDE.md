@@ -109,10 +109,10 @@ theme that always displays consumed usage may stay unchanged. See the
 
 ## Show CPU, memory and network
 
-The default theme ends its row with the machine's own load: a CPU line and a
+The default theme opens its row with the machine's own load: a CPU line and a
 memory line, drawn in the same segmented style as the providers beside them,
-followed by the network link in use (Ethernet or Wi-Fi) with its download and
-upload rates in megabits per second.
+then the network link in use (Ethernet or Wi-Fi) above its download and upload
+rates in megabits per second. Claude comes next, then the other providers.
 
 1. Open **Settings > General**.
 2. Set **Machine metrics** to **Enabled** or **Disabled**. Switching it off
@@ -172,6 +172,44 @@ no proxy. Checks stop while no theme or setting needs them.
 | `services.omniroute.status` | 0 not checked yet, 1 up, 2 answering but unhealthy, 3 down. |
 | `services.omniroute.latency_ms` | Round trip of the last answer, in milliseconds; 0 when down. |
 | `display.omniroute` | 1 when the user has **OmniRoute status** enabled, 0 when not. |
+
+### Firecrawl credits
+
+The default theme can show how many Firecrawl credits the current billing
+period has used, as a gauge and `used/plan`, for example `1240/3000`.
+
+1. Create an API key on firecrawl.dev and store it in the Windows user
+   environment variable `FIRECRAWL_API_KEY`.
+2. Restart the widget: the key is read once at startup.
+3. In **Settings > General**, **Firecrawl credits** turns the block on or off.
+
+Without the variable the block stays hidden and no request is made. When set,
+a background thread asks `https://api.firecrawl.dev/v2/team/credit-usage`
+every 5 minutes; requests stop while no theme or setting needs them.
+
+| Binding | Meaning |
+| --- | --- |
+| `services.firecrawl.status` | 0 not fetched yet, 1 fetched, 3 the last request failed. |
+| `services.firecrawl.used` | Credits used this period; never negative after a top-up. |
+| `services.firecrawl.plan` | Credits included in the plan. |
+| `services.firecrawl.remaining` | Credits left, including any top-ups. |
+| `services.firecrawl.percentage` | `used` as a percentage of `plan`, capped at 100. |
+| `display.firecrawl` | 1 when **Firecrawl credits** is enabled and a key is set, 0 otherwise. |
+
+### DevReport status
+
+After OmniRoute comes the local DevReport dashboard, with the same dot,
+response time and colours. Click the block to open the dashboard in the
+browser. **Settings > General > DevReport status** shows or hides it.
+
+The widget loads `http://127.0.0.1:4310/` on the same schedule as the
+OmniRoute check; any page that answers 200 counts as up.
+
+| Binding | Meaning |
+| --- | --- |
+| `services.devreport.status` | 0 not checked yet, 1 up, 2 answering with an error, 3 down. |
+| `services.devreport.latency_ms` | Round trip of the last answer, in milliseconds; 0 when down. |
+| `display.devreport` | 1 when the user has **DevReport status** enabled, 0 when not. |
 
 ## Claude extra limits in custom themes
 
