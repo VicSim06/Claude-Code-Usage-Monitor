@@ -10,11 +10,14 @@ changes grouped into Added, Changed, Fixed, and Removed where applicable.
 
 - Published Firecrawl credit usage for the current billing period to themes as `services.firecrawl.used`, `services.firecrawl.plan`, `services.firecrawl.remaining`, `services.firecrawl.percentage`, and `services.firecrawl.status` (0 not fetched, 1 fetched, 3 failed), with `display.firecrawl` reporting the new **Settings > General > Firecrawl credits** toggle. The API key is read from the `FIRECRAWL_API_KEY` environment variable at startup; without it the row stays hidden and nothing is requested.
 - Added a Firecrawl block at the end of the Classic theme: a usage gauge beside used over plan credits.
+- Published the local DevReport dashboard's health to themes as `services.devreport.status` and `services.devreport.latency_ms`, with `display.devreport` reporting the new **Settings > General > DevReport status** toggle, translated into every shipped language.
+- Added a DevReport block after OmniRoute in the Classic theme. Clicking it opens `http://127.0.0.1:4310/`.
 
 ### Changed
 
 - The Classic theme now reads left to right as machine load (CPU and memory, then network), Claude, then the other providers and services. The 5h/7d window labels moved from the widget's left edge to just before Claude so they stay beside the rows they name; the widget keeps the same width.
 - The network block shows the link type above a single line with both rates, narrowing it from 128 to 120 pixels.
+- The OmniRoute check became one of several local-service checks sharing the same background probe, so each service only declares its URL and what counts as healthy.
 
 ## [2.15.0] - 2026-10-04
 

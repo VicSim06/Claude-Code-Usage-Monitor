@@ -107,6 +107,12 @@ pub(super) const TEXT_TEMPLATE_VALUES: &[TextTemplateValue] = &[
     },
     TextTemplateValue {
         group: "System",
+        label: "DevReport status",
+        expression: "services.devreport.status",
+        kind: TextTemplateValueKind::Number,
+    },
+    TextTemplateValue {
+        group: "System",
         label: "Firecrawl plan credits",
         expression: "services.firecrawl.plan",
         kind: TextTemplateValueKind::Number,
@@ -115,6 +121,12 @@ pub(super) const TEXT_TEMPLATE_VALUES: &[TextTemplateValue] = &[
         group: "System",
         label: "Firecrawl credits remaining",
         expression: "services.firecrawl.remaining",
+        kind: TextTemplateValueKind::Number,
+    },
+    TextTemplateValue {
+        group: "System",
+        label: "DevReport latency (ms)",
+        expression: "services.devreport.latency_ms",
         kind: TextTemplateValueKind::Number,
     },
     TextTemplateValue {
@@ -1387,6 +1399,8 @@ pub(super) fn expression_variables_panel(
                     "services.firecrawl.plan",
                     "services.firecrawl.remaining",
                     "services.firecrawl.percentage",
+                    "services.devreport.status",
+                    "services.devreport.latency_ms",
                 ];
                 expression_variable_group(
                     ui,

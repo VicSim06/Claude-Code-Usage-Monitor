@@ -19,7 +19,7 @@
         "offset_x": 0,
         "offset_y": 0
       },
-      "width": "42 + providers.count * (ceil(10 / max(1, providers.count)) * 11 - 1 + 4 + 62) + max(0, providers.count - 1) * 3 + (providers.opencode.enabled + providers.cursor.enabled) * 28 + display.system_metrics * (ceil(5 / max(1, providers.count)) * 11 - 1 + 4 + 58 + 3 + 120 + 3) + display.omniroute * (66 + 3) + display.firecrawl * (120 + 3)",
+      "width": "42 + providers.count * (ceil(10 / max(1, providers.count)) * 11 - 1 + 4 + 62) + max(0, providers.count - 1) * 3 + (providers.opencode.enabled + providers.cursor.enabled) * 28 + display.system_metrics * (ceil(5 / max(1, providers.count)) * 11 - 1 + 4 + 58 + 3 + 120 + 3) + display.omniroute * (66 + 3) + display.devreport * (66 + 3) + display.firecrawl * (120 + 3)",
       "height": "46",
       "mouse_events": {
         "right_click": "show_context_menu(\"classic-v1\")"
@@ -1979,6 +1979,294 @@
           "name": "light OmniRoute unchecked",
           "render": "1 - system.dark && services.omniroute.status == 0",
           "parent": "omniroute-status",
+          "x": "14",
+          "y": "28",
+          "width": "52",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "--",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#333333FF"
+            }
+          }
+        },
+        {
+          "id": "devreport-status",
+          "name": "DevReport status",
+          "render": "display.devreport",
+          "parent": "provider-row",
+          "width": "66",
+          "height": "46",
+          "mouse_events": {
+            "click": "open_url(\"http://127.0.0.1:4310/\")",
+            "right_click": "show_context_menu(\"classic-v1\")"
+          }
+        },
+        {
+          "id": "devreport-label-dark",
+          "name": "dark DevReport label",
+          "render": "system.dark",
+          "parent": "devreport-status",
+          "x": "0",
+          "y": "5",
+          "width": "66",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "DevReport ↗",
+            "font_family": "Segoe UI",
+            "font_size": "11",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#B8B8B8FF"
+            }
+          }
+        },
+        {
+          "id": "devreport-label-light",
+          "name": "light DevReport label",
+          "render": "1 - system.dark",
+          "parent": "devreport-status",
+          "x": "0",
+          "y": "5",
+          "width": "66",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "DevReport ↗",
+            "font_family": "Segoe UI",
+            "font_size": "11",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#555555FF"
+            }
+          }
+        },
+        {
+          "id": "devreport-dot-unchecked",
+          "name": "DevReport unchecked dot",
+          "render": "services.devreport.status == 0",
+          "parent": "devreport-status",
+          "x": "0",
+          "y": "28",
+          "width": "12",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "●",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#8A8A8AFF"
+            }
+          }
+        },
+        {
+          "id": "devreport-dot-up",
+          "name": "DevReport up dot",
+          "render": "services.devreport.status == 1",
+          "parent": "devreport-status",
+          "x": "0",
+          "y": "28",
+          "width": "12",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "●",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#3FB950FF"
+            }
+          }
+        },
+        {
+          "id": "devreport-dot-degraded",
+          "name": "DevReport degraded dot",
+          "render": "services.devreport.status == 2",
+          "parent": "devreport-status",
+          "x": "0",
+          "y": "28",
+          "width": "12",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "●",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#E3A33BFF"
+            }
+          }
+        },
+        {
+          "id": "devreport-dot-down",
+          "name": "DevReport down dot",
+          "render": "services.devreport.status == 3",
+          "parent": "devreport-status",
+          "x": "0",
+          "y": "28",
+          "width": "12",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "●",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#E5534BFF"
+            }
+          }
+        },
+        {
+          "id": "devreport-latency-dark",
+          "name": "dark DevReport latency",
+          "render": "system.dark && (services.devreport.status == 1 || services.devreport.status == 2)",
+          "parent": "devreport-status",
+          "x": "14",
+          "y": "28",
+          "width": "52",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "{services.devreport.latency_ms:0} ms",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#D0D0D0FF"
+            }
+          }
+        },
+        {
+          "id": "devreport-down-dark",
+          "name": "dark DevReport down",
+          "render": "system.dark && services.devreport.status == 3",
+          "parent": "devreport-status",
+          "x": "14",
+          "y": "28",
+          "width": "52",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "off",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#D0D0D0FF"
+            }
+          }
+        },
+        {
+          "id": "devreport-unchecked-dark",
+          "name": "dark DevReport unchecked",
+          "render": "system.dark && services.devreport.status == 0",
+          "parent": "devreport-status",
+          "x": "14",
+          "y": "28",
+          "width": "52",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "--",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#D0D0D0FF"
+            }
+          }
+        },
+        {
+          "id": "devreport-latency-light",
+          "name": "light DevReport latency",
+          "render": "1 - system.dark && (services.devreport.status == 1 || services.devreport.status == 2)",
+          "parent": "devreport-status",
+          "x": "14",
+          "y": "28",
+          "width": "52",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "{services.devreport.latency_ms:0} ms",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#333333FF"
+            }
+          }
+        },
+        {
+          "id": "devreport-down-light",
+          "name": "light DevReport down",
+          "render": "1 - system.dark && services.devreport.status == 3",
+          "parent": "devreport-status",
+          "x": "14",
+          "y": "28",
+          "width": "52",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "off",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#333333FF"
+            }
+          }
+        },
+        {
+          "id": "devreport-unchecked-light",
+          "name": "light DevReport unchecked",
+          "render": "1 - system.dark && services.devreport.status == 0",
+          "parent": "devreport-status",
           "x": "14",
           "y": "28",
           "width": "52",

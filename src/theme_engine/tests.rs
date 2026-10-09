@@ -2688,6 +2688,19 @@ fn the_classic_theme_carries_a_machine_load_row_behind_the_user_setting() {
     assert_eq!(firecrawl.render.0, "display.firecrawl");
     assert!(theme.uses_firecrawl());
     assert!(theme.surfaces[0].width.0.contains("display.firecrawl"));
+    let devreport = theme.surfaces[0]
+        .children
+        .iter()
+        .find(|object| object.id == "devreport-status")
+        .expect("classic theme should carry the DevReport status block");
+    assert_eq!(devreport.render.0, "display.devreport");
+    let click = &devreport.mouse_events.as_ref().unwrap().click;
+    assert!(matches!(
+        parse_mouse_actions(click).unwrap().as_slice(),
+        [MouseAction::OpenUrl { url }] if url == crate::local_services::DEVREPORT.url
+    ));
+    assert!(theme.uses_devreport());
+    assert!(theme.surfaces[0].width.0.contains("display.devreport"));
 
     // Turning the setting off has to take the row's width with it, otherwise
     // the widget keeps a gap in the taskbar where the row used to be.
@@ -2719,8 +2732,8 @@ fn omniroute_bindings_publish_the_latest_health_check() {
     assert_eq!(unchecked.get("services.omniroute.status"), Some(0.0));
     assert_eq!(unchecked.get("display.omniroute"), Some(0.0));
 
-    let health = crate::omniroute::ServiceHealth {
-        status: crate::omniroute::ServiceStatus::Up,
+    let health = crate::local_services::ServiceHealth {
+        status: crate::local_services::ServiceStatus::Up,
         latency_ms: 4,
     };
     let context = DataContext::from_usage_with_runtime(

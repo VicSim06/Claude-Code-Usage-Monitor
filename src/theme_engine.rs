@@ -15,9 +15,9 @@ use windows::Win32::Foundation::{COLORREF, RECT};
 use windows::Win32::Graphics::Gdi::*;
 
 use crate::firecrawl::CreditUsage;
+use crate::local_services::ServiceHealth;
 use crate::localization::LanguageId;
 use crate::models::AppUsageData;
-use crate::omniroute::ServiceHealth;
 use crate::providers::{ProviderId, ProviderSet, PROVIDER_DESCRIPTORS};
 use crate::system_metrics::SystemMetrics;
 
@@ -1234,6 +1234,11 @@ pub struct ThemeRuntime {
     pub firecrawl: CreditUsage,
     /// Setting on and an API key present, published as `display.firecrawl`.
     pub show_firecrawl: bool,
+    /// Last health check of the local DevReport dashboard, published as
+    /// `services.devreport.*`.
+    pub devreport: ServiceHealth,
+    /// User's choice to show it, published as `display.devreport`.
+    pub show_devreport: bool,
     host_width: u32,
     host_height: u32,
 }
@@ -1254,6 +1259,8 @@ impl Default for ThemeRuntime {
             show_omniroute: false,
             firecrawl: CreditUsage::default(),
             show_firecrawl: false,
+            devreport: ServiceHealth::default(),
+            show_devreport: false,
             host_width: default_canvas_width(),
             host_height: default_canvas_height(),
         }
@@ -1290,6 +1297,8 @@ impl ThemeRuntime {
             show_omniroute: false,
             firecrawl: CreditUsage::default(),
             show_firecrawl: false,
+            devreport: ServiceHealth::default(),
+            show_devreport: false,
             host_width: default_canvas_width(),
             host_height: default_canvas_height(),
         }
@@ -1359,6 +1368,18 @@ impl ThemeRuntime {
     /// Whether the Firecrawl row is wanted, published as `display.firecrawl`.
     pub fn with_firecrawl_shown(mut self, shown: bool) -> Self {
         self.show_firecrawl = shown;
+        self
+    }
+
+    /// Supply the latest DevReport health check.
+    pub fn with_devreport(mut self, health: ServiceHealth) -> Self {
+        self.devreport = health;
+        self
+    }
+
+    /// Whether the DevReport row is wanted, published as `display.devreport`.
+    pub fn with_devreport_shown(mut self, shown: bool) -> Self {
+        self.show_devreport = shown;
         self
     }
 
@@ -1457,6 +1478,14 @@ impl DataContext {
             f64::from(firecrawl.remaining),
         );
         context.insert("services.firecrawl.percentage", firecrawl.percentage());
+        context.insert(
+            "services.devreport.status",
+            f64::from(runtime.devreport.status.code()),
+        );
+        context.insert(
+            "services.devreport.latency_ms",
+            f64::from(runtime.devreport.latency_ms),
+        );
         context.insert("data.poll_ok", runtime.poll_ok as u8 as f64);
         context.insert("data.has_error", runtime.has_error as u8 as f64);
         context.insert(
@@ -1510,6 +1539,7 @@ impl DataContext {
         );
         context.insert("display.omniroute", runtime.show_omniroute as u8 as f64);
         context.insert("display.firecrawl", runtime.show_firecrawl as u8 as f64);
+        context.insert("display.devreport", runtime.show_devreport as u8 as f64);
         if let Some(data) = data {
             for account in &data.accounts {
                 let key = format!(
@@ -2242,8 +2272,16 @@ impl ThemeDocument {
     }
 
     pub fn uses_omniroute(&self) -> bool {
+        self.mentions("services.omniroute")
+    }
+
+    pub fn uses_devreport(&self) -> bool {
+        self.mentions("services.devreport")
+    }
+
+    fn mentions(&self, binding: &str) -> bool {
         serde_json::to_string(self)
-            .is_ok_and(|source| source.to_ascii_lowercase().contains("services.omniroute"))
+            .is_ok_and(|source| source.to_ascii_lowercase().contains(binding))
     }
 
     pub fn uses_firecrawl(&self) -> bool {
