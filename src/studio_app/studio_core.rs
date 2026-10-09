@@ -49,6 +49,12 @@ impl StudioApp {
                 Default::default()
             })
             .with_devreport_shown(self.settings.show_devreport)
+            .with_claude_mem(if self.theme.uses_claude_mem() {
+                crate::local_services::CLAUDE_MEM.latest()
+            } else {
+                Default::default()
+            })
+            .with_claude_mem_shown(self.settings.show_claude_mem)
     }
 
     pub(super) fn theme_runtime_for_surface(&self, surface_index: usize) -> ThemeRuntime {

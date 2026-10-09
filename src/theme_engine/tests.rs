@@ -2701,6 +2701,19 @@ fn the_classic_theme_carries_a_machine_load_row_behind_the_user_setting() {
     ));
     assert!(theme.uses_devreport());
     assert!(theme.surfaces[0].width.0.contains("display.devreport"));
+    let claude_mem = theme.surfaces[0]
+        .children
+        .iter()
+        .find(|object| object.id == "claudemem-status")
+        .expect("classic theme should carry the claude-mem status block");
+    assert_eq!(claude_mem.render.0, "display.claudemem");
+    let click = &claude_mem.mouse_events.as_ref().unwrap().click;
+    assert!(matches!(
+        parse_mouse_actions(click).unwrap().as_slice(),
+        [MouseAction::OpenUrl { url }] if url == "http://127.0.0.1:37777/"
+    ));
+    assert!(theme.uses_claude_mem());
+    assert!(theme.surfaces[0].width.0.contains("display.claudemem"));
 
     // Turning the setting off has to take the row's width with it, otherwise
     // the widget keeps a gap in the taskbar where the row used to be.

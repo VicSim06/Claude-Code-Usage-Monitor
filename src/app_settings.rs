@@ -66,6 +66,9 @@ pub struct SettingsFile {
     /// Show the local DevReport dashboard's health in themes that carry it.
     #[serde(default = "default_true")]
     pub show_devreport: bool,
+    /// Show the local claude-mem worker's health in themes that carry it.
+    #[serde(default = "default_true")]
+    pub show_claude_mem: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub language: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -137,6 +140,7 @@ impl Default for SettingsFile {
             show_omniroute: true,
             show_firecrawl: true,
             show_devreport: true,
+            show_claude_mem: true,
             language: None,
             last_update_check_unix: None,
             show_claude_code: true,

@@ -19,7 +19,7 @@
         "offset_x": 0,
         "offset_y": 0
       },
-      "width": "42 + providers.count * (ceil(10 / max(1, providers.count)) * 11 - 1 + 4 + 62) + max(0, providers.count - 1) * 3 + (providers.opencode.enabled + providers.cursor.enabled) * 28 + display.system_metrics * (ceil(5 / max(1, providers.count)) * 11 - 1 + 4 + 58 + 3 + 120 + 3) + display.omniroute * (66 + 3) + display.devreport * (66 + 3) + display.firecrawl * (120 + 3)",
+      "width": "42 + providers.count * (ceil(10 / max(1, providers.count)) * 11 - 1 + 4 + 62) + max(0, providers.count - 1) * 3 + (providers.opencode.enabled + providers.cursor.enabled) * 28 + display.system_metrics * (ceil(5 / max(1, providers.count)) * 11 - 1 + 4 + 58 + 3 + 120 + 3) + display.omniroute * (66 + 3) + display.devreport * (66 + 3) + display.claudemem * (66 + 3) + display.firecrawl * (120 + 3)",
       "height": "46",
       "mouse_events": {
         "right_click": "show_context_menu(\"classic-v1\")"
@@ -2267,6 +2267,294 @@
           "name": "light DevReport unchecked",
           "render": "1 - system.dark && services.devreport.status == 0",
           "parent": "devreport-status",
+          "x": "14",
+          "y": "28",
+          "width": "52",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "--",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#333333FF"
+            }
+          }
+        },
+        {
+          "id": "claudemem-status",
+          "name": "claude-mem status",
+          "render": "display.claudemem",
+          "parent": "provider-row",
+          "width": "66",
+          "height": "46",
+          "mouse_events": {
+            "click": "open_url(\"http://127.0.0.1:37777/\")",
+            "right_click": "show_context_menu(\"classic-v1\")"
+          }
+        },
+        {
+          "id": "claudemem-label-dark",
+          "name": "dark claude-mem label",
+          "render": "system.dark",
+          "parent": "claudemem-status",
+          "x": "0",
+          "y": "5",
+          "width": "66",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "claude-mem ↗",
+            "font_family": "Segoe UI",
+            "font_size": "11",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#B8B8B8FF"
+            }
+          }
+        },
+        {
+          "id": "claudemem-label-light",
+          "name": "light claude-mem label",
+          "render": "1 - system.dark",
+          "parent": "claudemem-status",
+          "x": "0",
+          "y": "5",
+          "width": "66",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "claude-mem ↗",
+            "font_family": "Segoe UI",
+            "font_size": "11",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#555555FF"
+            }
+          }
+        },
+        {
+          "id": "claudemem-dot-unchecked",
+          "name": "claude-mem unchecked dot",
+          "render": "services.claudemem.status == 0",
+          "parent": "claudemem-status",
+          "x": "0",
+          "y": "28",
+          "width": "12",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "●",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#8A8A8AFF"
+            }
+          }
+        },
+        {
+          "id": "claudemem-dot-up",
+          "name": "claude-mem up dot",
+          "render": "services.claudemem.status == 1",
+          "parent": "claudemem-status",
+          "x": "0",
+          "y": "28",
+          "width": "12",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "●",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#3FB950FF"
+            }
+          }
+        },
+        {
+          "id": "claudemem-dot-degraded",
+          "name": "claude-mem degraded dot",
+          "render": "services.claudemem.status == 2",
+          "parent": "claudemem-status",
+          "x": "0",
+          "y": "28",
+          "width": "12",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "●",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#E3A33BFF"
+            }
+          }
+        },
+        {
+          "id": "claudemem-dot-down",
+          "name": "claude-mem down dot",
+          "render": "services.claudemem.status == 3",
+          "parent": "claudemem-status",
+          "x": "0",
+          "y": "28",
+          "width": "12",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "●",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#E5534BFF"
+            }
+          }
+        },
+        {
+          "id": "claudemem-latency-dark",
+          "name": "dark claude-mem latency",
+          "render": "system.dark && (services.claudemem.status == 1 || services.claudemem.status == 2)",
+          "parent": "claudemem-status",
+          "x": "14",
+          "y": "28",
+          "width": "52",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "{services.claudemem.latency_ms:0} ms",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#D0D0D0FF"
+            }
+          }
+        },
+        {
+          "id": "claudemem-down-dark",
+          "name": "dark claude-mem down",
+          "render": "system.dark && services.claudemem.status == 3",
+          "parent": "claudemem-status",
+          "x": "14",
+          "y": "28",
+          "width": "52",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "off",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#D0D0D0FF"
+            }
+          }
+        },
+        {
+          "id": "claudemem-unchecked-dark",
+          "name": "dark claude-mem unchecked",
+          "render": "system.dark && services.claudemem.status == 0",
+          "parent": "claudemem-status",
+          "x": "14",
+          "y": "28",
+          "width": "52",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "--",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#D0D0D0FF"
+            }
+          }
+        },
+        {
+          "id": "claudemem-latency-light",
+          "name": "light claude-mem latency",
+          "render": "1 - system.dark && (services.claudemem.status == 1 || services.claudemem.status == 2)",
+          "parent": "claudemem-status",
+          "x": "14",
+          "y": "28",
+          "width": "52",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "{services.claudemem.latency_ms:0} ms",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#333333FF"
+            }
+          }
+        },
+        {
+          "id": "claudemem-down-light",
+          "name": "light claude-mem down",
+          "render": "1 - system.dark && services.claudemem.status == 3",
+          "parent": "claudemem-status",
+          "x": "14",
+          "y": "28",
+          "width": "52",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "off",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#333333FF"
+            }
+          }
+        },
+        {
+          "id": "claudemem-unchecked-light",
+          "name": "light claude-mem unchecked",
+          "render": "1 - system.dark && services.claudemem.status == 0",
+          "parent": "claudemem-status",
           "x": "14",
           "y": "28",
           "width": "52",

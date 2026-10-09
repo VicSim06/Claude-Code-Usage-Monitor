@@ -4,6 +4,13 @@ Notable changes to Claude Code Usage Monitor are documented here, newest first.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), with
 changes grouped into Added, Changed, Fixed, and Removed where applicable.
 
+## [Unreleased]
+
+### Added
+
+- Published the local claude-mem worker's health to themes as `services.claudemem.status` and `services.claudemem.latency_ms`, with `display.claudemem` reporting the new **Settings > General > claude-mem status** toggle, translated into every shipped language.
+- Added a claude-mem block after DevReport in the Classic theme. Clicking it opens the dashboard at `http://127.0.0.1:37777/`.
+
 ## [2.16.0] - 2026-10-09
 
 ### Added
