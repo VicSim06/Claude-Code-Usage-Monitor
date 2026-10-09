@@ -10,6 +10,7 @@ changes grouped into Added, Changed, Fixed, and Removed where applicable.
 
 - Published the local claude-mem worker's health to themes as `services.claudemem.status` and `services.claudemem.latency_ms`, with `display.claudemem` reporting the new **Settings > General > claude-mem status** toggle, translated into every shipped language.
 - Added a claude-mem block after DevReport in the Classic theme. Clicking it opens the dashboard at `http://127.0.0.1:37777/`.
+- Wrote the live rows (machine load, OmniRoute, claude-mem, DevReport, Firecrawl) to `%APPDATA%\ClaudeCodeUsageMonitor\live-status.json` at most every 5 seconds, so other tools such as a Claude Code status band can show the same figures without sampling them again. A row the widget does not sample is `null` there.
 
 ## [2.16.0] - 2026-10-09
 
