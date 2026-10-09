@@ -130,6 +130,18 @@ pub(super) const TEXT_TEMPLATE_VALUES: &[TextTemplateValue] = &[
         kind: TextTemplateValueKind::Number,
     },
     TextTemplateValue {
+        group: "System",
+        label: "claude-mem status",
+        expression: "services.claudemem.status",
+        kind: TextTemplateValueKind::Number,
+    },
+    TextTemplateValue {
+        group: "System",
+        label: "claude-mem latency (ms)",
+        expression: "services.claudemem.latency_ms",
+        kind: TextTemplateValueKind::Number,
+    },
+    TextTemplateValue {
         group: "General",
         label: "Enabled provider count",
         expression: "providers.count",
@@ -1401,6 +1413,8 @@ pub(super) fn expression_variables_panel(
                     "services.firecrawl.percentage",
                     "services.devreport.status",
                     "services.devreport.latency_ms",
+                    "services.claudemem.status",
+                    "services.claudemem.latency_ms",
                 ];
                 expression_variable_group(
                     ui,

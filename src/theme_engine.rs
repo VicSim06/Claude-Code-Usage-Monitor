@@ -1239,6 +1239,11 @@ pub struct ThemeRuntime {
     pub devreport: ServiceHealth,
     /// User's choice to show it, published as `display.devreport`.
     pub show_devreport: bool,
+    /// Last health check of the local claude-mem worker, published as
+    /// `services.claudemem.*`.
+    pub claude_mem: ServiceHealth,
+    /// User's choice to show it, published as `display.claudemem`.
+    pub show_claude_mem: bool,
     host_width: u32,
     host_height: u32,
 }
@@ -1261,6 +1266,8 @@ impl Default for ThemeRuntime {
             show_firecrawl: false,
             devreport: ServiceHealth::default(),
             show_devreport: false,
+            claude_mem: ServiceHealth::default(),
+            show_claude_mem: false,
             host_width: default_canvas_width(),
             host_height: default_canvas_height(),
         }
@@ -1299,6 +1306,8 @@ impl ThemeRuntime {
             show_firecrawl: false,
             devreport: ServiceHealth::default(),
             show_devreport: false,
+            claude_mem: ServiceHealth::default(),
+            show_claude_mem: false,
             host_width: default_canvas_width(),
             host_height: default_canvas_height(),
         }
@@ -1380,6 +1389,18 @@ impl ThemeRuntime {
     /// Whether the DevReport row is wanted, published as `display.devreport`.
     pub fn with_devreport_shown(mut self, shown: bool) -> Self {
         self.show_devreport = shown;
+        self
+    }
+
+    /// Supply the latest claude-mem health check.
+    pub fn with_claude_mem(mut self, health: ServiceHealth) -> Self {
+        self.claude_mem = health;
+        self
+    }
+
+    /// Whether the claude-mem row is wanted, published as `display.claudemem`.
+    pub fn with_claude_mem_shown(mut self, shown: bool) -> Self {
+        self.show_claude_mem = shown;
         self
     }
 
@@ -1486,6 +1507,14 @@ impl DataContext {
             "services.devreport.latency_ms",
             f64::from(runtime.devreport.latency_ms),
         );
+        context.insert(
+            "services.claudemem.status",
+            f64::from(runtime.claude_mem.status.code()),
+        );
+        context.insert(
+            "services.claudemem.latency_ms",
+            f64::from(runtime.claude_mem.latency_ms),
+        );
         context.insert("data.poll_ok", runtime.poll_ok as u8 as f64);
         context.insert("data.has_error", runtime.has_error as u8 as f64);
         context.insert(
@@ -1540,6 +1569,7 @@ impl DataContext {
         context.insert("display.omniroute", runtime.show_omniroute as u8 as f64);
         context.insert("display.firecrawl", runtime.show_firecrawl as u8 as f64);
         context.insert("display.devreport", runtime.show_devreport as u8 as f64);
+        context.insert("display.claudemem", runtime.show_claude_mem as u8 as f64);
         if let Some(data) = data {
             for account in &data.accounts {
                 let key = format!(
@@ -2277,6 +2307,10 @@ impl ThemeDocument {
 
     pub fn uses_devreport(&self) -> bool {
         self.mentions("services.devreport")
+    }
+
+    pub fn uses_claude_mem(&self) -> bool {
+        self.mentions("services.claudemem")
     }
 
     fn mentions(&self, binding: &str) -> bool {

@@ -153,6 +153,9 @@ struct AppState {
     theme_uses_devreport: bool,
     show_devreport: bool,
     devreport: ServiceHealth,
+    theme_uses_claude_mem: bool,
+    show_claude_mem: bool,
+    claude_mem: ServiceHealth,
     mirror_hwnds: Vec<SendHwnd>,
     desktop_hwnds: Vec<Option<SendHwnd>>,
     mouse_action_overrides: HashMap<MouseActionOverrideKey, theme_engine::Expression>,
@@ -176,6 +179,10 @@ impl AppState {
 
     fn wants_devreport(&self) -> bool {
         self.theme_uses_devreport && self.show_devreport
+    }
+
+    fn wants_claude_mem(&self) -> bool {
+        self.theme_uses_claude_mem && self.show_claude_mem
     }
 }
 
@@ -638,6 +645,8 @@ fn theme_runtime_from_state(state: &AppState) -> ThemeRuntime {
         .with_firecrawl_shown(state.show_firecrawl)
         .with_devreport(state.devreport)
         .with_devreport_shown(state.show_devreport)
+        .with_claude_mem(state.claude_mem)
+        .with_claude_mem_shown(state.show_claude_mem)
 }
 
 /// A transient outage can keep presenting the last real reading while its
@@ -1584,6 +1593,7 @@ fn apply_custom_theme(
     let theme_uses_omniroute = loaded.uses_omniroute();
     let theme_uses_firecrawl = loaded.uses_firecrawl();
     let theme_uses_devreport = loaded.uses_devreport();
+    let theme_uses_claude_mem = loaded.uses_claude_mem();
     let old_hook = {
         let mut state = lock_state();
         let Some(state) = state.as_mut() else {
@@ -1597,6 +1607,7 @@ fn apply_custom_theme(
         state.theme_uses_omniroute = theme_uses_omniroute;
         state.theme_uses_firecrawl = theme_uses_firecrawl;
         state.theme_uses_devreport = theme_uses_devreport;
+        state.theme_uses_claude_mem = theme_uses_claude_mem;
         state.mouse_action_overrides.clear();
         state.hovered_mouse_layer = None;
         state.pending_mouse_click = None;
@@ -2068,6 +2079,9 @@ pub fn run() {
         let theme_uses_devreport = active_theme
             .as_ref()
             .is_some_and(ThemeDocument::uses_devreport);
+        let theme_uses_claude_mem = active_theme
+            .as_ref()
+            .is_some_and(ThemeDocument::uses_claude_mem);
         if let Some(path) = &active_theme_path {
             let path = path.to_string_lossy().into_owned();
             if settings.active_theme_path.as_deref() != Some(path.as_str())
@@ -2201,6 +2215,9 @@ pub fn run() {
                 theme_uses_devreport,
                 show_devreport: settings.show_devreport,
                 devreport: ServiceHealth::default(),
+                theme_uses_claude_mem,
+                show_claude_mem: settings.show_claude_mem,
+                claude_mem: ServiceHealth::default(),
                 mirror_hwnds: Vec::new(),
                 desktop_hwnds: Vec::new(),
                 mouse_action_overrides: HashMap::new(),
@@ -2851,7 +2868,8 @@ fn schedule_system_metrics_timer() {
     if !(s.wants_system_metrics()
         || s.wants_omniroute()
         || s.wants_firecrawl()
-        || s.wants_devreport())
+        || s.wants_devreport()
+        || s.wants_claude_mem())
     {
         unsafe {
             let _ = KillTimer(Some(hwnd), TIMER_SYSTEM_METRICS);
@@ -2884,6 +2902,9 @@ fn refresh_system_metrics() {
     }
     if s.wants_devreport() {
         s.devreport = crate::local_services::DEVREPORT.latest();
+    }
+    if s.wants_claude_mem() {
+        s.claude_mem = crate::local_services::CLAUDE_MEM.latest();
     }
     if s.wants_firecrawl() {
         s.firecrawl = crate::firecrawl::latest();
@@ -2947,6 +2968,7 @@ fn reload_external_settings(hwnd: HWND) {
         state.show_omniroute = settings.show_omniroute;
         state.show_firecrawl = settings.show_firecrawl && crate::firecrawl::configured();
         state.show_devreport = settings.show_devreport;
+        state.show_claude_mem = settings.show_claude_mem;
         state.system_metrics_interval_ms = settings.system_metrics_interval_ms;
         state.providers = settings.enabled_providers();
         state.usage_countdown = settings.usage_countdown;

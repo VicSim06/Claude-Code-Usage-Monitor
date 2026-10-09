@@ -105,6 +105,21 @@ impl StudioApp {
                 setting_separator(ui);
                 setting_row(
                     ui,
+                    language.text("claude-mem status"),
+                    language.text("Show whether the local claude-mem worker is running"),
+                    |ui| {
+                        if Toggle::new(&mut self.settings.show_claude_mem)
+                            .labels(language.text("Enabled"), language.text("Disabled"))
+                            .show(ui)
+                            .changed()
+                        {
+                            changed = true;
+                        }
+                    },
+                );
+                setting_separator(ui);
+                setting_row(
+                    ui,
                     language.text("Sampling interval"),
                     language.text("How often CPU and memory are re-read"),
                     |ui| {

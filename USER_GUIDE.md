@@ -211,6 +211,21 @@ OmniRoute check; any page that answers 200 counts as up.
 | `services.devreport.latency_ms` | Round trip of the last answer, in milliseconds; 0 when down. |
 | `display.devreport` | 1 when the user has **DevReport status** enabled, 0 when not. |
 
+### claude-mem status
+
+After DevReport comes the local claude-mem worker, with the same dot,
+response time and colours. Click the block to open its dashboard in the
+browser. **Settings > General > claude-mem status** shows or hides it.
+
+The widget calls `http://127.0.0.1:37777/api/health` on the same schedule as
+the OmniRoute check; a 200 answer with `"status":"ok"` counts as up.
+
+| Binding | Meaning |
+| --- | --- |
+| `services.claudemem.status` | 0 not checked yet, 1 up, 2 answering with an error, 3 down. |
+| `services.claudemem.latency_ms` | Round trip of the last answer, in milliseconds; 0 when down. |
+| `display.claudemem` | 1 when the user has **claude-mem status** enabled, 0 when not. |
+
 ## Claude extra limits in custom themes
 
 Claude may report extra quotas in its usage API, including model-specific caps.

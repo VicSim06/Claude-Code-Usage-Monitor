@@ -1,6 +1,6 @@
 //! Health of servers running on this machine, published to themes as
-//! `services.<name>.*` bindings: the OmniRoute gateway and the DevReport
-//! dashboard.
+//! `services.<name>.*` bindings: the OmniRoute gateway, the DevReport
+//! dashboard and the claude-mem worker.
 //!
 //! The check is an HTTP call, so unlike the machine counters it never runs on
 //! the window thread: a background thread per service probes on its own
@@ -27,6 +27,14 @@ pub static DEVREPORT: LocalService =
     LocalService::new("devreport-health", "http://127.0.0.1:4310/", |code, _| {
         code == 200
     });
+
+/// claude-mem's worker answers `{"status":"ok"}` like OmniRoute; its
+/// dashboard is the root page.
+pub static CLAUDE_MEM: LocalService = LocalService::new(
+    "claude-mem-health",
+    "http://127.0.0.1:37777/api/health",
+    omniroute_healthy,
+);
 
 const PROBE_INTERVAL: Duration = Duration::from_secs(15);
 /// Short because the server is on this machine: anything slower is down.
