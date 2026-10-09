@@ -338,6 +338,14 @@ fn object(id: &str, parent: Option<&str>) -> SceneObject {
     object
 }
 
+/// Pins English: assertions read UI strings, and the default language follows
+/// the Windows display language.
+fn english_settings() -> SettingsFile {
+    let mut settings = SettingsFile::default();
+    settings.language = Some(LanguageId::English.code().into());
+    settings
+}
+
 fn app_with_surfaces(surfaces: Vec<SceneObject>) -> StudioApp {
     let mut theme = ThemeDocument::starter();
     theme.id = "test-theme".into();
@@ -349,7 +357,7 @@ fn app_with_surfaces(surfaces: Vec<SceneObject>) -> StudioApp {
         update_status: crate::dashboard::UpdateStatus::Idle,
         diagnostics: studio_diagnostics::DiagnosticsView::new(),
         page: Page::Studio,
-        settings: SettingsFile::default(),
+        settings: english_settings(),
         synced_poll_interval_ms: SettingsFile::default().poll_interval_ms,
         poll_interval_editor_generation: 0,
         startup_enabled: false,
