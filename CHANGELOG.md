@@ -4,7 +4,7 @@ Notable changes to Claude Code Usage Monitor are documented here, newest first.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), with
 changes grouped into Added, Changed, Fixed, and Removed where applicable.
 
-## [Unreleased]
+## [2.16.0] - 2026-10-09
 
 ### Added
 
@@ -920,3 +920,4 @@ changes grouped into Added, Changed, Fixed, and Removed where applicable.
 [2.13.43]: https://github.com/CodeZeno/Claude-Code-Usage-Monitor/compare/v2.12.42...v2.13.43
 [2.13.44]: https://github.com/CodeZeno/Claude-Code-Usage-Monitor/compare/v2.13.43...v2.13.44
 [2.15.0]: https://github.com/VicSim06/Claude-Code-Usage-Monitor/compare/v2.14.0...v2.15.0
+[2.16.0]: https://github.com/VicSim06/Claude-Code-Usage-Monitor/compare/v2.15.0...v2.16.0
