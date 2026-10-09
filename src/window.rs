@@ -2909,6 +2909,16 @@ fn refresh_system_metrics() {
     if s.wants_firecrawl() {
         s.firecrawl = crate::firecrawl::latest();
     }
+    let live = crate::live_status::LiveStatus {
+        updated_unix: crate::live_status::now_unix(),
+        system: s.wants_system_metrics().then(|| s.system_metrics.into()),
+        omniroute: s.wants_omniroute().then(|| s.omniroute.into()),
+        claude_mem: s.wants_claude_mem().then(|| s.claude_mem.into()),
+        devreport: s.wants_devreport().then(|| s.devreport.into()),
+        firecrawl: s.wants_firecrawl().then(|| s.firecrawl.into()),
+    };
+    drop(state);
+    crate::live_status::publish(&live);
 }
 
 fn time_until_next_clock_refresh(interval: Duration) -> Duration {

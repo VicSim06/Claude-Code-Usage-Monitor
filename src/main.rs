@@ -8,6 +8,7 @@ mod desktop_compositor;
 mod diagnose;
 mod firecrawl;
 mod font_catalog;
+mod live_status;
 mod local_services;
 mod localization;
 mod models;
