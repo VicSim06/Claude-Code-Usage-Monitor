@@ -90,10 +90,10 @@ impl StudioApp {
                 setting_separator(ui);
                 setting_row(
                     ui,
-                    language.text("DevReport status"),
-                    language.text("Show whether the local DevReport dashboard is running"),
+                    language.text("NOBRAIN status"),
+                    language.text("Show whether the local NOBRAIN dashboard is running"),
                     |ui| {
-                        if Toggle::new(&mut self.settings.show_devreport)
+                        if Toggle::new(&mut self.settings.show_nobrain)
                             .labels(language.text("Enabled"), language.text("Disabled"))
                             .show(ui)
                             .changed()

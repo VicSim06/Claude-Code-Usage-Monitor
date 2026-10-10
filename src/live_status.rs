@@ -27,7 +27,7 @@ pub struct LiveStatus {
     pub system: Option<SystemSnapshot>,
     pub omniroute: Option<ServiceSnapshot>,
     pub claude_mem: Option<ServiceSnapshot>,
-    pub devreport: Option<ServiceSnapshot>,
+    pub nobrain: Option<ServiceSnapshot>,
     pub firecrawl: Option<FirecrawlSnapshot>,
 }
 
@@ -175,7 +175,7 @@ mod tests {
                 }
                 .into(),
             ),
-            devreport: None,
+            nobrain: None,
             firecrawl: Some(
                 CreditUsage {
                     status: 1,
@@ -190,7 +190,7 @@ mod tests {
         assert_eq!(json["system"]["cpu_percent"], 12);
         assert_eq!(json["omniroute"]["status"], "up");
         assert_eq!(json["claude_mem"]["status"], "down");
-        assert!(json["devreport"].is_null());
+        assert!(json["nobrain"].is_null());
         assert_eq!(json["firecrawl"]["used"], 100);
         assert_eq!(json["firecrawl"]["percentage"], 20.0);
     }

@@ -150,9 +150,9 @@ struct AppState {
     theme_uses_firecrawl: bool,
     show_firecrawl: bool,
     firecrawl: CreditUsage,
-    theme_uses_devreport: bool,
-    show_devreport: bool,
-    devreport: ServiceHealth,
+    theme_uses_nobrain: bool,
+    show_nobrain: bool,
+    nobrain: ServiceHealth,
     theme_uses_claude_mem: bool,
     show_claude_mem: bool,
     claude_mem: ServiceHealth,
@@ -177,8 +177,8 @@ impl AppState {
         self.theme_uses_firecrawl && self.show_firecrawl
     }
 
-    fn wants_devreport(&self) -> bool {
-        self.theme_uses_devreport && self.show_devreport
+    fn wants_nobrain(&self) -> bool {
+        self.theme_uses_nobrain && self.show_nobrain
     }
 
     fn wants_claude_mem(&self) -> bool {
@@ -643,8 +643,8 @@ fn theme_runtime_from_state(state: &AppState) -> ThemeRuntime {
         .with_omniroute_shown(state.show_omniroute)
         .with_firecrawl(state.firecrawl)
         .with_firecrawl_shown(state.show_firecrawl)
-        .with_devreport(state.devreport)
-        .with_devreport_shown(state.show_devreport)
+        .with_nobrain(state.nobrain)
+        .with_nobrain_shown(state.show_nobrain)
         .with_claude_mem(state.claude_mem)
         .with_claude_mem_shown(state.show_claude_mem)
 }
@@ -1592,7 +1592,7 @@ fn apply_custom_theme(
     let theme_uses_system_metrics = loaded.uses_system_metrics();
     let theme_uses_omniroute = loaded.uses_omniroute();
     let theme_uses_firecrawl = loaded.uses_firecrawl();
-    let theme_uses_devreport = loaded.uses_devreport();
+    let theme_uses_nobrain = loaded.uses_nobrain();
     let theme_uses_claude_mem = loaded.uses_claude_mem();
     let old_hook = {
         let mut state = lock_state();
@@ -1606,7 +1606,7 @@ fn apply_custom_theme(
         state.theme_uses_system_metrics = theme_uses_system_metrics;
         state.theme_uses_omniroute = theme_uses_omniroute;
         state.theme_uses_firecrawl = theme_uses_firecrawl;
-        state.theme_uses_devreport = theme_uses_devreport;
+        state.theme_uses_nobrain = theme_uses_nobrain;
         state.theme_uses_claude_mem = theme_uses_claude_mem;
         state.mouse_action_overrides.clear();
         state.hovered_mouse_layer = None;
@@ -2076,9 +2076,9 @@ pub fn run() {
         let theme_uses_firecrawl = active_theme
             .as_ref()
             .is_some_and(ThemeDocument::uses_firecrawl);
-        let theme_uses_devreport = active_theme
+        let theme_uses_nobrain = active_theme
             .as_ref()
-            .is_some_and(ThemeDocument::uses_devreport);
+            .is_some_and(ThemeDocument::uses_nobrain);
         let theme_uses_claude_mem = active_theme
             .as_ref()
             .is_some_and(ThemeDocument::uses_claude_mem);
@@ -2212,9 +2212,9 @@ pub fn run() {
                 theme_uses_firecrawl,
                 show_firecrawl: settings.show_firecrawl && crate::firecrawl::configured(),
                 firecrawl: CreditUsage::default(),
-                theme_uses_devreport,
-                show_devreport: settings.show_devreport,
-                devreport: ServiceHealth::default(),
+                theme_uses_nobrain,
+                show_nobrain: settings.show_nobrain,
+                nobrain: ServiceHealth::default(),
                 theme_uses_claude_mem,
                 show_claude_mem: settings.show_claude_mem,
                 claude_mem: ServiceHealth::default(),
@@ -2868,7 +2868,7 @@ fn schedule_system_metrics_timer() {
     if !(s.wants_system_metrics()
         || s.wants_omniroute()
         || s.wants_firecrawl()
-        || s.wants_devreport()
+        || s.wants_nobrain()
         || s.wants_claude_mem())
     {
         unsafe {
@@ -2900,8 +2900,8 @@ fn refresh_system_metrics() {
         // Never blocks: the HTTP check runs on its own thread.
         s.omniroute = crate::local_services::OMNIROUTE.latest();
     }
-    if s.wants_devreport() {
-        s.devreport = crate::local_services::DEVREPORT.latest();
+    if s.wants_nobrain() {
+        s.nobrain = crate::local_services::NOBRAIN.latest();
     }
     if s.wants_claude_mem() {
         s.claude_mem = crate::local_services::CLAUDE_MEM.latest();
@@ -2914,7 +2914,7 @@ fn refresh_system_metrics() {
         system: s.wants_system_metrics().then(|| s.system_metrics.into()),
         omniroute: s.wants_omniroute().then(|| s.omniroute.into()),
         claude_mem: s.wants_claude_mem().then(|| s.claude_mem.into()),
-        devreport: s.wants_devreport().then(|| s.devreport.into()),
+        nobrain: s.wants_nobrain().then(|| s.nobrain.into()),
         firecrawl: s.wants_firecrawl().then(|| s.firecrawl.into()),
     };
     drop(state);
@@ -2977,7 +2977,7 @@ fn reload_external_settings(hwnd: HWND) {
         state.show_system_metrics = settings.show_system_metrics;
         state.show_omniroute = settings.show_omniroute;
         state.show_firecrawl = settings.show_firecrawl && crate::firecrawl::configured();
-        state.show_devreport = settings.show_devreport;
+        state.show_nobrain = settings.show_nobrain;
         state.show_claude_mem = settings.show_claude_mem;
         state.system_metrics_interval_ms = settings.system_metrics_interval_ms;
         state.providers = settings.enabled_providers();

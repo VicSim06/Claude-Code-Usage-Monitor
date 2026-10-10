@@ -1,5 +1,5 @@
 //! Health of servers running on this machine, published to themes as
-//! `services.<name>.*` bindings: the OmniRoute gateway, the DevReport
+//! `services.<name>.*` bindings: the OmniRoute gateway, the NOBRAIN
 //! dashboard and the claude-mem worker.
 //!
 //! The check is an HTTP call, so unlike the machine counters it never runs on
@@ -21,10 +21,10 @@ pub static OMNIROUTE: LocalService = LocalService::new(
     omniroute_healthy,
 );
 
-/// DevReport has no health route: its dashboard page answering is the check.
-/// Port from DevReport's `config.json`.
-pub static DEVREPORT: LocalService =
-    LocalService::new("devreport-health", "http://127.0.0.1:4310/", |code, _| {
+/// NOBRAIN has no health route: its dashboard page answering is the check.
+/// Port from NOBRAIN's `config.json`.
+pub static NOBRAIN: LocalService =
+    LocalService::new("nobrain-health", "http://127.0.0.1:4310/", |code, _| {
         code == 200
     });
 
@@ -239,8 +239,8 @@ mod tests {
     }
 
     #[test]
-    fn devreport_reads_up_on_its_page_and_degraded_on_an_error() {
-        let healthy = DEVREPORT.healthy;
+    fn nobrain_reads_up_on_its_page_and_degraded_on_an_error() {
+        let healthy = NOBRAIN.healthy;
         let up = health_from(Some((200, "<!doctype html>")), FAST, healthy);
         assert_eq!(up.status, ServiceStatus::Up);
         let broken = health_from(Some((500, "")), FAST, healthy);
