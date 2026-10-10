@@ -1234,11 +1234,11 @@ pub struct ThemeRuntime {
     pub firecrawl: CreditUsage,
     /// Setting on and an API key present, published as `display.firecrawl`.
     pub show_firecrawl: bool,
-    /// Last health check of the local DevReport dashboard, published as
-    /// `services.devreport.*`.
-    pub devreport: ServiceHealth,
-    /// User's choice to show it, published as `display.devreport`.
-    pub show_devreport: bool,
+    /// Last health check of the local NOBRAIN dashboard, published as
+    /// `services.nobrain.*`.
+    pub nobrain: ServiceHealth,
+    /// User's choice to show it, published as `display.nobrain`.
+    pub show_nobrain: bool,
     /// Last health check of the local claude-mem worker, published as
     /// `services.claudemem.*`.
     pub claude_mem: ServiceHealth,
@@ -1264,8 +1264,8 @@ impl Default for ThemeRuntime {
             show_omniroute: false,
             firecrawl: CreditUsage::default(),
             show_firecrawl: false,
-            devreport: ServiceHealth::default(),
-            show_devreport: false,
+            nobrain: ServiceHealth::default(),
+            show_nobrain: false,
             claude_mem: ServiceHealth::default(),
             show_claude_mem: false,
             host_width: default_canvas_width(),
@@ -1304,8 +1304,8 @@ impl ThemeRuntime {
             show_omniroute: false,
             firecrawl: CreditUsage::default(),
             show_firecrawl: false,
-            devreport: ServiceHealth::default(),
-            show_devreport: false,
+            nobrain: ServiceHealth::default(),
+            show_nobrain: false,
             claude_mem: ServiceHealth::default(),
             show_claude_mem: false,
             host_width: default_canvas_width(),
@@ -1380,15 +1380,15 @@ impl ThemeRuntime {
         self
     }
 
-    /// Supply the latest DevReport health check.
-    pub fn with_devreport(mut self, health: ServiceHealth) -> Self {
-        self.devreport = health;
+    /// Supply the latest NOBRAIN health check.
+    pub fn with_nobrain(mut self, health: ServiceHealth) -> Self {
+        self.nobrain = health;
         self
     }
 
-    /// Whether the DevReport row is wanted, published as `display.devreport`.
-    pub fn with_devreport_shown(mut self, shown: bool) -> Self {
-        self.show_devreport = shown;
+    /// Whether the NOBRAIN row is wanted, published as `display.nobrain`.
+    pub fn with_nobrain_shown(mut self, shown: bool) -> Self {
+        self.show_nobrain = shown;
         self
     }
 
@@ -1500,12 +1500,12 @@ impl DataContext {
         );
         context.insert("services.firecrawl.percentage", firecrawl.percentage());
         context.insert(
-            "services.devreport.status",
-            f64::from(runtime.devreport.status.code()),
+            "services.nobrain.status",
+            f64::from(runtime.nobrain.status.code()),
         );
         context.insert(
-            "services.devreport.latency_ms",
-            f64::from(runtime.devreport.latency_ms),
+            "services.nobrain.latency_ms",
+            f64::from(runtime.nobrain.latency_ms),
         );
         context.insert(
             "services.claudemem.status",
@@ -1568,7 +1568,7 @@ impl DataContext {
         );
         context.insert("display.omniroute", runtime.show_omniroute as u8 as f64);
         context.insert("display.firecrawl", runtime.show_firecrawl as u8 as f64);
-        context.insert("display.devreport", runtime.show_devreport as u8 as f64);
+        context.insert("display.nobrain", runtime.show_nobrain as u8 as f64);
         context.insert("display.claudemem", runtime.show_claude_mem as u8 as f64);
         if let Some(data) = data {
             for account in &data.accounts {
@@ -2305,8 +2305,8 @@ impl ThemeDocument {
         self.mentions("services.omniroute")
     }
 
-    pub fn uses_devreport(&self) -> bool {
-        self.mentions("services.devreport")
+    pub fn uses_nobrain(&self) -> bool {
+        self.mentions("services.nobrain")
     }
 
     pub fn uses_claude_mem(&self) -> bool {

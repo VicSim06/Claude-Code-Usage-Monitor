@@ -2688,19 +2688,19 @@ fn the_classic_theme_carries_a_machine_load_row_behind_the_user_setting() {
     assert_eq!(firecrawl.render.0, "display.firecrawl");
     assert!(theme.uses_firecrawl());
     assert!(theme.surfaces[0].width.0.contains("display.firecrawl"));
-    let devreport = theme.surfaces[0]
+    let nobrain = theme.surfaces[0]
         .children
         .iter()
-        .find(|object| object.id == "devreport-status")
-        .expect("classic theme should carry the DevReport status block");
-    assert_eq!(devreport.render.0, "display.devreport");
-    let click = &devreport.mouse_events.as_ref().unwrap().click;
+        .find(|object| object.id == "nobrain-status")
+        .expect("classic theme should carry the NOBRAIN status block");
+    assert_eq!(nobrain.render.0, "display.nobrain");
+    let click = &nobrain.mouse_events.as_ref().unwrap().click;
     assert!(matches!(
         parse_mouse_actions(click).unwrap().as_slice(),
-        [MouseAction::OpenUrl { url }] if url == crate::local_services::DEVREPORT.url
+        [MouseAction::OpenUrl { url }] if url == crate::local_services::NOBRAIN.url
     ));
-    assert!(theme.uses_devreport());
-    assert!(theme.surfaces[0].width.0.contains("display.devreport"));
+    assert!(theme.uses_nobrain());
+    assert!(theme.surfaces[0].width.0.contains("display.nobrain"));
     let claude_mem = theme.surfaces[0]
         .children
         .iter()

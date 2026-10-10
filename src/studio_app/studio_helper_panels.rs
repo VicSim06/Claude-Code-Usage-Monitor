@@ -107,8 +107,8 @@ pub(super) const TEXT_TEMPLATE_VALUES: &[TextTemplateValue] = &[
     },
     TextTemplateValue {
         group: "System",
-        label: "DevReport status",
-        expression: "services.devreport.status",
+        label: "NOBRAIN status",
+        expression: "services.nobrain.status",
         kind: TextTemplateValueKind::Number,
     },
     TextTemplateValue {
@@ -125,8 +125,8 @@ pub(super) const TEXT_TEMPLATE_VALUES: &[TextTemplateValue] = &[
     },
     TextTemplateValue {
         group: "System",
-        label: "DevReport latency (ms)",
-        expression: "services.devreport.latency_ms",
+        label: "NOBRAIN latency (ms)",
+        expression: "services.nobrain.latency_ms",
         kind: TextTemplateValueKind::Number,
     },
     TextTemplateValue {
@@ -1411,8 +1411,8 @@ pub(super) fn expression_variables_panel(
                     "services.firecrawl.plan",
                     "services.firecrawl.remaining",
                     "services.firecrawl.percentage",
-                    "services.devreport.status",
-                    "services.devreport.latency_ms",
+                    "services.nobrain.status",
+                    "services.nobrain.latency_ms",
                     "services.claudemem.status",
                     "services.claudemem.latency_ms",
                 ];

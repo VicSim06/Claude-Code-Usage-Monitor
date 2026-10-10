@@ -19,7 +19,7 @@
         "offset_x": 0,
         "offset_y": 0
       },
-      "width": "42 + providers.count * (ceil(10 / max(1, providers.count)) * 11 - 1 + 4 + 62) + max(0, providers.count - 1) * 3 + (providers.opencode.enabled + providers.cursor.enabled) * 28 + display.system_metrics * (ceil(5 / max(1, providers.count)) * 11 - 1 + 4 + 58 + 3 + 120 + 3) + display.omniroute * (66 + 3) + display.devreport * (66 + 3) + display.claudemem * (66 + 3) + display.firecrawl * (120 + 3)",
+      "width": "42 + providers.count * (ceil(10 / max(1, providers.count)) * 11 - 1 + 4 + 62) + max(0, providers.count - 1) * 3 + (providers.opencode.enabled + providers.cursor.enabled) * 28 + display.system_metrics * (ceil(5 / max(1, providers.count)) * 11 - 1 + 4 + 58 + 3 + 120 + 3) + display.omniroute * (66 + 3) + display.nobrain * (66 + 3) + display.claudemem * (66 + 3) + display.firecrawl * (120 + 3)",
       "height": "46",
       "mouse_events": {
         "right_click": "show_context_menu(\"classic-v1\")"
@@ -1998,9 +1998,9 @@
           }
         },
         {
-          "id": "devreport-status",
-          "name": "DevReport status",
-          "render": "display.devreport",
+          "id": "nobrain-status",
+          "name": "NOBRAIN status",
+          "render": "display.nobrain",
           "parent": "provider-row",
           "width": "66",
           "height": "46",
@@ -2010,17 +2010,17 @@
           }
         },
         {
-          "id": "devreport-label-dark",
-          "name": "dark DevReport label",
+          "id": "nobrain-label-dark",
+          "name": "dark NOBRAIN label",
           "render": "system.dark",
-          "parent": "devreport-status",
+          "parent": "nobrain-status",
           "x": "0",
           "y": "5",
           "width": "66",
           "height": "13",
           "content": {
             "type": "text",
-            "template": "DevReport ↗",
+            "template": "NOBRAIN ↗",
             "font_family": "Segoe UI",
             "font_size": "11",
             "weight": "medium",
@@ -2033,17 +2033,17 @@
           }
         },
         {
-          "id": "devreport-label-light",
-          "name": "light DevReport label",
+          "id": "nobrain-label-light",
+          "name": "light NOBRAIN label",
           "render": "1 - system.dark",
-          "parent": "devreport-status",
+          "parent": "nobrain-status",
           "x": "0",
           "y": "5",
           "width": "66",
           "height": "13",
           "content": {
             "type": "text",
-            "template": "DevReport ↗",
+            "template": "NOBRAIN ↗",
             "font_family": "Segoe UI",
             "font_size": "11",
             "weight": "medium",
@@ -2056,10 +2056,10 @@
           }
         },
         {
-          "id": "devreport-dot-unchecked",
-          "name": "DevReport unchecked dot",
-          "render": "services.devreport.status == 0",
-          "parent": "devreport-status",
+          "id": "nobrain-dot-unchecked",
+          "name": "NOBRAIN unchecked dot",
+          "render": "services.nobrain.status == 0",
+          "parent": "nobrain-status",
           "x": "0",
           "y": "28",
           "width": "12",
@@ -2079,10 +2079,10 @@
           }
         },
         {
-          "id": "devreport-dot-up",
-          "name": "DevReport up dot",
-          "render": "services.devreport.status == 1",
-          "parent": "devreport-status",
+          "id": "nobrain-dot-up",
+          "name": "NOBRAIN up dot",
+          "render": "services.nobrain.status == 1",
+          "parent": "nobrain-status",
           "x": "0",
           "y": "28",
           "width": "12",
@@ -2102,10 +2102,10 @@
           }
         },
         {
-          "id": "devreport-dot-degraded",
-          "name": "DevReport degraded dot",
-          "render": "services.devreport.status == 2",
-          "parent": "devreport-status",
+          "id": "nobrain-dot-degraded",
+          "name": "NOBRAIN degraded dot",
+          "render": "services.nobrain.status == 2",
+          "parent": "nobrain-status",
           "x": "0",
           "y": "28",
           "width": "12",
@@ -2125,10 +2125,10 @@
           }
         },
         {
-          "id": "devreport-dot-down",
-          "name": "DevReport down dot",
-          "render": "services.devreport.status == 3",
-          "parent": "devreport-status",
+          "id": "nobrain-dot-down",
+          "name": "NOBRAIN down dot",
+          "render": "services.nobrain.status == 3",
+          "parent": "nobrain-status",
           "x": "0",
           "y": "28",
           "width": "12",
@@ -2148,17 +2148,17 @@
           }
         },
         {
-          "id": "devreport-latency-dark",
-          "name": "dark DevReport latency",
-          "render": "system.dark && (services.devreport.status == 1 || services.devreport.status == 2)",
-          "parent": "devreport-status",
+          "id": "nobrain-latency-dark",
+          "name": "dark NOBRAIN latency",
+          "render": "system.dark && (services.nobrain.status == 1 || services.nobrain.status == 2)",
+          "parent": "nobrain-status",
           "x": "14",
           "y": "28",
           "width": "52",
           "height": "13",
           "content": {
             "type": "text",
-            "template": "{services.devreport.latency_ms:0} ms",
+            "template": "{services.nobrain.latency_ms:0} ms",
             "font_family": "Segoe UI",
             "font_size": "12",
             "weight": "medium",
@@ -2171,10 +2171,10 @@
           }
         },
         {
-          "id": "devreport-down-dark",
-          "name": "dark DevReport down",
-          "render": "system.dark && services.devreport.status == 3",
-          "parent": "devreport-status",
+          "id": "nobrain-down-dark",
+          "name": "dark NOBRAIN down",
+          "render": "system.dark && services.nobrain.status == 3",
+          "parent": "nobrain-status",
           "x": "14",
           "y": "28",
           "width": "52",
@@ -2194,10 +2194,10 @@
           }
         },
         {
-          "id": "devreport-unchecked-dark",
-          "name": "dark DevReport unchecked",
-          "render": "system.dark && services.devreport.status == 0",
-          "parent": "devreport-status",
+          "id": "nobrain-unchecked-dark",
+          "name": "dark NOBRAIN unchecked",
+          "render": "system.dark && services.nobrain.status == 0",
+          "parent": "nobrain-status",
           "x": "14",
           "y": "28",
           "width": "52",
@@ -2217,17 +2217,17 @@
           }
         },
         {
-          "id": "devreport-latency-light",
-          "name": "light DevReport latency",
-          "render": "1 - system.dark && (services.devreport.status == 1 || services.devreport.status == 2)",
-          "parent": "devreport-status",
+          "id": "nobrain-latency-light",
+          "name": "light NOBRAIN latency",
+          "render": "1 - system.dark && (services.nobrain.status == 1 || services.nobrain.status == 2)",
+          "parent": "nobrain-status",
           "x": "14",
           "y": "28",
           "width": "52",
           "height": "13",
           "content": {
             "type": "text",
-            "template": "{services.devreport.latency_ms:0} ms",
+            "template": "{services.nobrain.latency_ms:0} ms",
             "font_family": "Segoe UI",
             "font_size": "12",
             "weight": "medium",
@@ -2240,10 +2240,10 @@
           }
         },
         {
-          "id": "devreport-down-light",
-          "name": "light DevReport down",
-          "render": "1 - system.dark && services.devreport.status == 3",
-          "parent": "devreport-status",
+          "id": "nobrain-down-light",
+          "name": "light NOBRAIN down",
+          "render": "1 - system.dark && services.nobrain.status == 3",
+          "parent": "nobrain-status",
           "x": "14",
           "y": "28",
           "width": "52",
@@ -2263,10 +2263,10 @@
           }
         },
         {
-          "id": "devreport-unchecked-light",
-          "name": "light DevReport unchecked",
-          "render": "1 - system.dark && services.devreport.status == 0",
-          "parent": "devreport-status",
+          "id": "nobrain-unchecked-light",
+          "name": "light NOBRAIN unchecked",
+          "render": "1 - system.dark && services.nobrain.status == 0",
+          "parent": "nobrain-status",
           "x": "14",
           "y": "28",
           "width": "52",

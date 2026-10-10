@@ -63,9 +63,9 @@ pub struct SettingsFile {
     /// when `FIRECRAWL_API_KEY` is set.
     #[serde(default = "default_true")]
     pub show_firecrawl: bool,
-    /// Show the local DevReport dashboard's health in themes that carry it.
-    #[serde(default = "default_true")]
-    pub show_devreport: bool,
+    /// Show the local NOBRAIN dashboard's health in themes that carry it.
+    #[serde(default = "default_true", alias = "show_devreport")]
+    pub show_nobrain: bool,
     /// Show the local claude-mem worker's health in themes that carry it.
     #[serde(default = "default_true")]
     pub show_claude_mem: bool,
@@ -139,7 +139,7 @@ impl Default for SettingsFile {
             system_metrics_interval_ms: default_system_metrics_interval(),
             show_omniroute: true,
             show_firecrawl: true,
-            show_devreport: true,
+            show_nobrain: true,
             show_claude_mem: true,
             language: None,
             last_update_check_unix: None,

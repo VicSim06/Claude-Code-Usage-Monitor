@@ -196,24 +196,24 @@ every 5 minutes; requests stop while no theme or setting needs them.
 | `services.firecrawl.percentage` | `used` as a percentage of `plan`, capped at 100. |
 | `display.firecrawl` | 1 when **Firecrawl credits** is enabled and a key is set, 0 otherwise. |
 
-### DevReport status
+### NOBRAIN status
 
-After OmniRoute comes the local DevReport dashboard, with the same dot,
+After OmniRoute comes the local NOBRAIN dashboard, with the same dot,
 response time and colours. Click the block to open the dashboard in the
-browser. **Settings > General > DevReport status** shows or hides it.
+browser. **Settings > General > NOBRAIN status** shows or hides it.
 
 The widget loads `http://127.0.0.1:4310/` on the same schedule as the
 OmniRoute check; any page that answers 200 counts as up.
 
 | Binding | Meaning |
 | --- | --- |
-| `services.devreport.status` | 0 not checked yet, 1 up, 2 answering with an error, 3 down. |
-| `services.devreport.latency_ms` | Round trip of the last answer, in milliseconds; 0 when down. |
-| `display.devreport` | 1 when the user has **DevReport status** enabled, 0 when not. |
+| `services.nobrain.status` | 0 not checked yet, 1 up, 2 answering with an error, 3 down. |
+| `services.nobrain.latency_ms` | Round trip of the last answer, in milliseconds; 0 when down. |
+| `display.nobrain` | 1 when the user has **NOBRAIN status** enabled, 0 when not. |
 
 ### claude-mem status
 
-After DevReport comes the local claude-mem worker, with the same dot,
+After NOBRAIN comes the local claude-mem worker, with the same dot,
 response time and colours. Click the block to open its dashboard in the
 browser. **Settings > General > claude-mem status** shows or hides it.
 

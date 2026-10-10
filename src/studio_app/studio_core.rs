@@ -43,12 +43,12 @@ impl StudioApp {
                 Default::default()
             })
             .with_firecrawl_shown(self.settings.show_firecrawl && crate::firecrawl::configured())
-            .with_devreport(if self.theme.uses_devreport() {
-                crate::local_services::DEVREPORT.latest()
+            .with_nobrain(if self.theme.uses_nobrain() {
+                crate::local_services::NOBRAIN.latest()
             } else {
                 Default::default()
             })
-            .with_devreport_shown(self.settings.show_devreport)
+            .with_nobrain_shown(self.settings.show_nobrain)
             .with_claude_mem(if self.theme.uses_claude_mem() {
                 crate::local_services::CLAUDE_MEM.latest()
             } else {
