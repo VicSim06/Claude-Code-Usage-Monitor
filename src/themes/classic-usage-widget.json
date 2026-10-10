@@ -2791,12 +2791,12 @@
             "template": "{consoles.0.name}",
             "font_family": "Segoe UI",
             "font_size": "11",
-            "weight": "medium",
+            "weight": "bold",
             "rendering": "clear_type",
             "contrast": "1",
             "align": "left",
             "color": {
-              "color": "#B8B8B8FF"
+              "color": "#F5D547FF"
             }
           }
         },
@@ -2860,12 +2860,12 @@
             "template": "{consoles.0.name}",
             "font_family": "Segoe UI",
             "font_size": "11",
-            "weight": "medium",
+            "weight": "bold",
             "rendering": "clear_type",
             "contrast": "1",
             "align": "left",
             "color": {
-              "color": "#555555FF"
+              "color": "#8A6D00FF"
             }
           }
         },
@@ -2941,12 +2941,12 @@
             "template": "{consoles.1.name}",
             "font_family": "Segoe UI",
             "font_size": "11",
-            "weight": "medium",
+            "weight": "bold",
             "rendering": "clear_type",
             "contrast": "1",
             "align": "left",
             "color": {
-              "color": "#B8B8B8FF"
+              "color": "#F5D547FF"
             }
           }
         },
@@ -3010,12 +3010,12 @@
             "template": "{consoles.1.name}",
             "font_family": "Segoe UI",
             "font_size": "11",
-            "weight": "medium",
+            "weight": "bold",
             "rendering": "clear_type",
             "contrast": "1",
             "align": "left",
             "color": {
-              "color": "#555555FF"
+              "color": "#8A6D00FF"
             }
           }
         },
@@ -3091,12 +3091,12 @@
             "template": "{consoles.2.name}",
             "font_family": "Segoe UI",
             "font_size": "11",
-            "weight": "medium",
+            "weight": "bold",
             "rendering": "clear_type",
             "contrast": "1",
             "align": "left",
             "color": {
-              "color": "#B8B8B8FF"
+              "color": "#F5D547FF"
             }
           }
         },
@@ -3160,12 +3160,12 @@
             "template": "{consoles.2.name}",
             "font_family": "Segoe UI",
             "font_size": "11",
-            "weight": "medium",
+            "weight": "bold",
             "rendering": "clear_type",
             "contrast": "1",
             "align": "left",
             "color": {
-              "color": "#555555FF"
+              "color": "#8A6D00FF"
             }
           }
         },
@@ -3241,12 +3241,12 @@
             "template": "{consoles.3.name}",
             "font_family": "Segoe UI",
             "font_size": "11",
-            "weight": "medium",
+            "weight": "bold",
             "rendering": "clear_type",
             "contrast": "1",
             "align": "left",
             "color": {
-              "color": "#B8B8B8FF"
+              "color": "#F5D547FF"
             }
           }
         },
@@ -3310,12 +3310,12 @@
             "template": "{consoles.3.name}",
             "font_family": "Segoe UI",
             "font_size": "11",
-            "weight": "medium",
+            "weight": "bold",
             "rendering": "clear_type",
             "contrast": "1",
             "align": "left",
             "color": {
-              "color": "#555555FF"
+              "color": "#8A6D00FF"
             }
           }
         },
@@ -3391,12 +3391,12 @@
             "template": "{consoles.4.name}",
             "font_family": "Segoe UI",
             "font_size": "11",
-            "weight": "medium",
+            "weight": "bold",
             "rendering": "clear_type",
             "contrast": "1",
             "align": "left",
             "color": {
-              "color": "#B8B8B8FF"
+              "color": "#F5D547FF"
             }
           }
         },
@@ -3460,12 +3460,12 @@
             "template": "{consoles.4.name}",
             "font_family": "Segoe UI",
             "font_size": "11",
-            "weight": "medium",
+            "weight": "bold",
             "rendering": "clear_type",
             "contrast": "1",
             "align": "left",
             "color": {
-              "color": "#555555FF"
+              "color": "#8A6D00FF"
             }
           }
         },
@@ -3541,12 +3541,12 @@
             "template": "{consoles.5.name}",
             "font_family": "Segoe UI",
             "font_size": "11",
-            "weight": "medium",
+            "weight": "bold",
             "rendering": "clear_type",
             "contrast": "1",
             "align": "left",
             "color": {
-              "color": "#B8B8B8FF"
+              "color": "#F5D547FF"
             }
           }
         },
@@ -3610,12 +3610,12 @@
             "template": "{consoles.5.name}",
             "font_family": "Segoe UI",
             "font_size": "11",
-            "weight": "medium",
+            "weight": "bold",
             "rendering": "clear_type",
             "contrast": "1",
             "align": "left",
             "color": {
-              "color": "#555555FF"
+              "color": "#8A6D00FF"
             }
           }
         },
