@@ -4,6 +4,22 @@ Notable changes to Claude Code Usage Monitor are documented here, newest first.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), with
 changes grouped into Added, Changed, Fixed, and Removed where applicable.
 
+## [Unreleased]
+
+### Added
+
+- Published the open Claude Code consoles to themes as `consoles.count`, `consoles.<n>.name` and `consoles.<n>.busy` (up to 6, oldest first), read from `~/.claude/sessions`. A file left by a closed console is ignored.
+- Added a `focus_console(n)` mouse action: it brings that console's window to the front and, in Windows Terminal, selects its tab.
+- Added one block per console at the end of the Classic row: its name, then an orange **Working** or a green **Available**. Clicking it brings the console to the front.
+
+### Changed
+
+- Hid the Firecrawl credit counter in the Classic theme; the gauge stays, and the figures are still written to `live-status.json`.
+
+### Fixed
+
+- The Classic row was 28 px narrower than its blocks, which cut off the last one.
+
 ## [2.17.0] - 2026-10-09
 
 ### Added

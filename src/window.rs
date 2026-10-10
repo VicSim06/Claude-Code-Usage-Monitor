@@ -156,6 +156,9 @@ struct AppState {
     theme_uses_claude_mem: bool,
     show_claude_mem: bool,
     claude_mem: ServiceHealth,
+    /// Set from the active theme: the session files are only read for a
+    /// theme that shows `consoles.*`.
+    theme_uses_consoles: bool,
     mirror_hwnds: Vec<SendHwnd>,
     desktop_hwnds: Vec<Option<SendHwnd>>,
     mouse_action_overrides: HashMap<MouseActionOverrideKey, theme_engine::Expression>,
@@ -1594,6 +1597,7 @@ fn apply_custom_theme(
     let theme_uses_firecrawl = loaded.uses_firecrawl();
     let theme_uses_nobrain = loaded.uses_nobrain();
     let theme_uses_claude_mem = loaded.uses_claude_mem();
+    let theme_uses_consoles = loaded.uses_consoles();
     let old_hook = {
         let mut state = lock_state();
         let Some(state) = state.as_mut() else {
@@ -1608,6 +1612,7 @@ fn apply_custom_theme(
         state.theme_uses_firecrawl = theme_uses_firecrawl;
         state.theme_uses_nobrain = theme_uses_nobrain;
         state.theme_uses_claude_mem = theme_uses_claude_mem;
+        state.theme_uses_consoles = theme_uses_consoles;
         state.mouse_action_overrides.clear();
         state.hovered_mouse_layer = None;
         state.pending_mouse_click = None;
@@ -2082,6 +2087,9 @@ pub fn run() {
         let theme_uses_claude_mem = active_theme
             .as_ref()
             .is_some_and(ThemeDocument::uses_claude_mem);
+        let theme_uses_consoles = active_theme
+            .as_ref()
+            .is_some_and(ThemeDocument::uses_consoles);
         if let Some(path) = &active_theme_path {
             let path = path.to_string_lossy().into_owned();
             if settings.active_theme_path.as_deref() != Some(path.as_str())
@@ -2218,6 +2226,7 @@ pub fn run() {
                 theme_uses_claude_mem,
                 show_claude_mem: settings.show_claude_mem,
                 claude_mem: ServiceHealth::default(),
+                theme_uses_consoles,
                 mirror_hwnds: Vec::new(),
                 desktop_hwnds: Vec::new(),
                 mouse_action_overrides: HashMap::new(),
@@ -2869,7 +2878,8 @@ fn schedule_system_metrics_timer() {
         || s.wants_omniroute()
         || s.wants_firecrawl()
         || s.wants_nobrain()
-        || s.wants_claude_mem())
+        || s.wants_claude_mem()
+        || s.theme_uses_consoles)
     {
         unsafe {
             let _ = KillTimer(Some(hwnd), TIMER_SYSTEM_METRICS);
@@ -2908,6 +2918,9 @@ fn refresh_system_metrics() {
     }
     if s.wants_firecrawl() {
         s.firecrawl = crate::firecrawl::latest();
+    }
+    if s.theme_uses_consoles {
+        crate::claude_consoles::refresh();
     }
     let live = crate::live_status::LiveStatus {
         updated_unix: crate::live_status::now_unix(),
