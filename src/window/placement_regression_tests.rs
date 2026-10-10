@@ -62,6 +62,7 @@ fn state_for(theme: ThemeDocument, placement: PlacementOverride) -> AppState {
         theme_uses_claude_mem: false,
         show_claude_mem: false,
         claude_mem: Default::default(),
+        theme_uses_consoles: false,
         mirror_hwnds: Vec::new(),
         desktop_hwnds: Vec::new(),
         mouse_action_overrides: HashMap::new(),

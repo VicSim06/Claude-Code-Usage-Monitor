@@ -464,6 +464,9 @@ pub enum MouseAction {
     ShowContextMenu {
         menu: Option<String>,
     },
+    FocusConsole {
+        slot: usize,
+    },
     Set {
         target: MouseActionTarget,
         property: MouseActionProperty,
@@ -502,6 +505,7 @@ pub enum MouseActionEffect {
     ToggleDashboard,
     OpenUrl(String),
     ShowContextMenu(Option<String>),
+    FocusConsole(usize),
 }
 
 /// Parse the deliberately small, line-or-semicolon separated action language.
@@ -549,6 +553,15 @@ pub fn parse_mouse_actions(source: &str) -> Result<Vec<MouseAction>, String> {
             "show_context_menu" => {
                 return Err("show_context_menu expects zero or one quoted menu id or name".into())
             }
+            "focus_console" => match args.as_slice() {
+                [slot] => actions.push(MouseAction::FocusConsole {
+                    slot: slot
+                        .trim()
+                        .parse()
+                        .map_err(|_| "focus_console expects a console slot number")?,
+                }),
+                _ => return Err("focus_console expects one console slot number".into()),
+            },
             "set" | "increase" | "decrease" => {
                 let (target, property, value) = match args.as_slice() {
                     [target_property, value] => {
@@ -1515,6 +1528,19 @@ impl DataContext {
             "services.claudemem.latency_ms",
             f64::from(runtime.claude_mem.latency_ms),
         );
+        let consoles = crate::claude_consoles::latest();
+        context.insert("consoles.count", consoles.len() as f64);
+        for slot in 0..crate::claude_consoles::MAX_CONSOLES {
+            let console = consoles.get(slot);
+            context.insert_string(
+                &format!("consoles.{slot}.name"),
+                console.map_or("", |console| console.name.as_str()),
+            );
+            context.insert(
+                &format!("consoles.{slot}.busy"),
+                console.is_some_and(|console| console.busy) as u8 as f64,
+            );
+        }
         context.insert("data.poll_ok", runtime.poll_ok as u8 as f64);
         context.insert("data.has_error", runtime.has_error as u8 as f64);
         context.insert(
@@ -1996,7 +2022,8 @@ pub fn validate_mouse_action_script(
             MouseAction::ShowDashboard
             | MouseAction::ToggleDashboard
             | MouseAction::OpenUrl { .. }
-            | MouseAction::ShowContextMenu { .. } => continue,
+            | MouseAction::ShowContextMenu { .. }
+            | MouseAction::FocusConsole { .. } => continue,
             MouseAction::Set {
                 target,
                 property,
@@ -2205,6 +2232,9 @@ pub fn execute_mouse_actions(
             MouseAction::ShowContextMenu { menu } => {
                 effects.push(MouseActionEffect::ShowContextMenu(menu))
             }
+            MouseAction::FocusConsole { slot } => {
+                effects.push(MouseActionEffect::FocusConsole(slot))
+            }
             MouseAction::Set {
                 target,
                 property,
@@ -2311,6 +2341,10 @@ impl ThemeDocument {
 
     pub fn uses_claude_mem(&self) -> bool {
         self.mentions("services.claudemem")
+    }
+
+    pub fn uses_consoles(&self) -> bool {
+        self.mentions("consoles.")
     }
 
     fn mentions(&self, binding: &str) -> bool {
