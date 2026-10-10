@@ -4,16 +4,17 @@ Notable changes to Claude Code Usage Monitor are documented here, newest first.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), with
 changes grouped into Added, Changed, Fixed, and Removed where applicable.
 
-## [Unreleased]
+## [2.18.0] - 2026-10-10
 
 ### Added
 
 - Published the open Claude Code consoles to themes as `consoles.count`, `consoles.<n>.name` and `consoles.<n>.busy` (up to 6, oldest first), read from `~/.claude/sessions`. A file left by a closed console is ignored.
 - Added a `focus_console(n)` mouse action: it brings that console's window to the front and, in Windows Terminal, selects its tab.
-- Added one block per console at the end of the Classic row: its name, then an orange **Working** or a green **Available**. Clicking it brings the console to the front.
+- Added one block per console at the end of the Classic row: its name in bold yellow, then an orange **Working** or a green **Available**. Clicking it brings the console to the front.
 
 ### Changed
 
+- Renamed DevReport to NOBRAIN: the bindings are now `services.nobrain.*` and `display.nobrain`, and the `live-status.json` key is `nobrain`. The old `show_devreport` setting is still read.
 - Hid the Firecrawl credit counter in the Classic theme; the gauge stays, and the figures are still written to `live-status.json`.
 
 ### Fixed
@@ -946,3 +947,4 @@ changes grouped into Added, Changed, Fixed, and Removed where applicable.
 [2.15.0]: https://github.com/VicSim06/Claude-Code-Usage-Monitor/compare/v2.14.0...v2.15.0
 [2.16.0]: https://github.com/VicSim06/Claude-Code-Usage-Monitor/compare/v2.15.0...v2.16.0
 [2.17.0]: https://github.com/VicSim06/Claude-Code-Usage-Monitor/compare/v2.16.0...v2.17.0
+[2.18.0]: https://github.com/VicSim06/Claude-Code-Usage-Monitor/compare/v2.17.0...v2.18.0
