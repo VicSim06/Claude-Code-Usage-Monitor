@@ -2773,7 +2773,6 @@
           "width": "96",
           "height": "46",
           "mouse_events": {
-            "click": "focus_console(0)",
             "right_click": "show_context_menu(\"classic-v1\")"
           }
         },
@@ -2783,7 +2782,7 @@
           "render": "system.dark",
           "parent": "console-0",
           "x": "0",
-          "y": "5",
+          "y": "16",
           "width": "96",
           "height": "13",
           "content": {
@@ -2801,58 +2800,12 @@
           }
         },
         {
-          "id": "console-0-working-dark",
-          "name": "dark console 1 working",
-          "render": "system.dark && consoles.0.busy",
-          "parent": "console-0",
-          "x": "0",
-          "y": "28",
-          "width": "96",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "● Working",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "semibold",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#F0A33AFF"
-            }
-          }
-        },
-        {
-          "id": "console-0-available-dark",
-          "name": "dark console 1 available",
-          "render": "system.dark && !consoles.0.busy",
-          "parent": "console-0",
-          "x": "0",
-          "y": "28",
-          "width": "96",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "● Available",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "semibold",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#3FB950FF"
-            }
-          }
-        },
-        {
           "id": "console-0-name-light",
           "name": "light console 1 name",
           "render": "1 - system.dark",
           "parent": "console-0",
           "x": "0",
-          "y": "5",
+          "y": "16",
           "width": "96",
           "height": "13",
           "content": {
@@ -2866,52 +2819,6 @@
             "align": "left",
             "color": {
               "color": "#8A6D00FF"
-            }
-          }
-        },
-        {
-          "id": "console-0-working-light",
-          "name": "light console 1 working",
-          "render": "1 - system.dark && consoles.0.busy",
-          "parent": "console-0",
-          "x": "0",
-          "y": "28",
-          "width": "96",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "● Working",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "semibold",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#B35F00FF"
-            }
-          }
-        },
-        {
-          "id": "console-0-available-light",
-          "name": "light console 1 available",
-          "render": "1 - system.dark && !consoles.0.busy",
-          "parent": "console-0",
-          "x": "0",
-          "y": "28",
-          "width": "96",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "● Available",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "semibold",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#1A7F37FF"
             }
           }
         },
@@ -2923,7 +2830,6 @@
           "width": "96",
           "height": "46",
           "mouse_events": {
-            "click": "focus_console(1)",
             "right_click": "show_context_menu(\"classic-v1\")"
           }
         },
@@ -2933,7 +2839,7 @@
           "render": "system.dark",
           "parent": "console-1",
           "x": "0",
-          "y": "5",
+          "y": "16",
           "width": "96",
           "height": "13",
           "content": {
@@ -2951,58 +2857,12 @@
           }
         },
         {
-          "id": "console-1-working-dark",
-          "name": "dark console 2 working",
-          "render": "system.dark && consoles.1.busy",
-          "parent": "console-1",
-          "x": "0",
-          "y": "28",
-          "width": "96",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "● Working",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "semibold",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#F0A33AFF"
-            }
-          }
-        },
-        {
-          "id": "console-1-available-dark",
-          "name": "dark console 2 available",
-          "render": "system.dark && !consoles.1.busy",
-          "parent": "console-1",
-          "x": "0",
-          "y": "28",
-          "width": "96",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "● Available",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "semibold",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#3FB950FF"
-            }
-          }
-        },
-        {
           "id": "console-1-name-light",
           "name": "light console 2 name",
           "render": "1 - system.dark",
           "parent": "console-1",
           "x": "0",
-          "y": "5",
+          "y": "16",
           "width": "96",
           "height": "13",
           "content": {
@@ -3016,52 +2876,6 @@
             "align": "left",
             "color": {
               "color": "#8A6D00FF"
-            }
-          }
-        },
-        {
-          "id": "console-1-working-light",
-          "name": "light console 2 working",
-          "render": "1 - system.dark && consoles.1.busy",
-          "parent": "console-1",
-          "x": "0",
-          "y": "28",
-          "width": "96",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "● Working",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "semibold",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#B35F00FF"
-            }
-          }
-        },
-        {
-          "id": "console-1-available-light",
-          "name": "light console 2 available",
-          "render": "1 - system.dark && !consoles.1.busy",
-          "parent": "console-1",
-          "x": "0",
-          "y": "28",
-          "width": "96",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "● Available",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "semibold",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#1A7F37FF"
             }
           }
         },
@@ -3073,7 +2887,6 @@
           "width": "96",
           "height": "46",
           "mouse_events": {
-            "click": "focus_console(2)",
             "right_click": "show_context_menu(\"classic-v1\")"
           }
         },
@@ -3083,7 +2896,7 @@
           "render": "system.dark",
           "parent": "console-2",
           "x": "0",
-          "y": "5",
+          "y": "16",
           "width": "96",
           "height": "13",
           "content": {
@@ -3101,58 +2914,12 @@
           }
         },
         {
-          "id": "console-2-working-dark",
-          "name": "dark console 3 working",
-          "render": "system.dark && consoles.2.busy",
-          "parent": "console-2",
-          "x": "0",
-          "y": "28",
-          "width": "96",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "● Working",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "semibold",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#F0A33AFF"
-            }
-          }
-        },
-        {
-          "id": "console-2-available-dark",
-          "name": "dark console 3 available",
-          "render": "system.dark && !consoles.2.busy",
-          "parent": "console-2",
-          "x": "0",
-          "y": "28",
-          "width": "96",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "● Available",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "semibold",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#3FB950FF"
-            }
-          }
-        },
-        {
           "id": "console-2-name-light",
           "name": "light console 3 name",
           "render": "1 - system.dark",
           "parent": "console-2",
           "x": "0",
-          "y": "5",
+          "y": "16",
           "width": "96",
           "height": "13",
           "content": {
@@ -3166,52 +2933,6 @@
             "align": "left",
             "color": {
               "color": "#8A6D00FF"
-            }
-          }
-        },
-        {
-          "id": "console-2-working-light",
-          "name": "light console 3 working",
-          "render": "1 - system.dark && consoles.2.busy",
-          "parent": "console-2",
-          "x": "0",
-          "y": "28",
-          "width": "96",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "● Working",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "semibold",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#B35F00FF"
-            }
-          }
-        },
-        {
-          "id": "console-2-available-light",
-          "name": "light console 3 available",
-          "render": "1 - system.dark && !consoles.2.busy",
-          "parent": "console-2",
-          "x": "0",
-          "y": "28",
-          "width": "96",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "● Available",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "semibold",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#1A7F37FF"
             }
           }
         },
@@ -3223,7 +2944,6 @@
           "width": "96",
           "height": "46",
           "mouse_events": {
-            "click": "focus_console(3)",
             "right_click": "show_context_menu(\"classic-v1\")"
           }
         },
@@ -3233,7 +2953,7 @@
           "render": "system.dark",
           "parent": "console-3",
           "x": "0",
-          "y": "5",
+          "y": "16",
           "width": "96",
           "height": "13",
           "content": {
@@ -3251,58 +2971,12 @@
           }
         },
         {
-          "id": "console-3-working-dark",
-          "name": "dark console 4 working",
-          "render": "system.dark && consoles.3.busy",
-          "parent": "console-3",
-          "x": "0",
-          "y": "28",
-          "width": "96",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "● Working",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "semibold",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#F0A33AFF"
-            }
-          }
-        },
-        {
-          "id": "console-3-available-dark",
-          "name": "dark console 4 available",
-          "render": "system.dark && !consoles.3.busy",
-          "parent": "console-3",
-          "x": "0",
-          "y": "28",
-          "width": "96",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "● Available",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "semibold",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#3FB950FF"
-            }
-          }
-        },
-        {
           "id": "console-3-name-light",
           "name": "light console 4 name",
           "render": "1 - system.dark",
           "parent": "console-3",
           "x": "0",
-          "y": "5",
+          "y": "16",
           "width": "96",
           "height": "13",
           "content": {
@@ -3316,52 +2990,6 @@
             "align": "left",
             "color": {
               "color": "#8A6D00FF"
-            }
-          }
-        },
-        {
-          "id": "console-3-working-light",
-          "name": "light console 4 working",
-          "render": "1 - system.dark && consoles.3.busy",
-          "parent": "console-3",
-          "x": "0",
-          "y": "28",
-          "width": "96",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "● Working",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "semibold",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#B35F00FF"
-            }
-          }
-        },
-        {
-          "id": "console-3-available-light",
-          "name": "light console 4 available",
-          "render": "1 - system.dark && !consoles.3.busy",
-          "parent": "console-3",
-          "x": "0",
-          "y": "28",
-          "width": "96",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "● Available",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "semibold",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#1A7F37FF"
             }
           }
         },
@@ -3373,7 +3001,6 @@
           "width": "96",
           "height": "46",
           "mouse_events": {
-            "click": "focus_console(4)",
             "right_click": "show_context_menu(\"classic-v1\")"
           }
         },
@@ -3383,7 +3010,7 @@
           "render": "system.dark",
           "parent": "console-4",
           "x": "0",
-          "y": "5",
+          "y": "16",
           "width": "96",
           "height": "13",
           "content": {
@@ -3401,58 +3028,12 @@
           }
         },
         {
-          "id": "console-4-working-dark",
-          "name": "dark console 5 working",
-          "render": "system.dark && consoles.4.busy",
-          "parent": "console-4",
-          "x": "0",
-          "y": "28",
-          "width": "96",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "● Working",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "semibold",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#F0A33AFF"
-            }
-          }
-        },
-        {
-          "id": "console-4-available-dark",
-          "name": "dark console 5 available",
-          "render": "system.dark && !consoles.4.busy",
-          "parent": "console-4",
-          "x": "0",
-          "y": "28",
-          "width": "96",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "● Available",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "semibold",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#3FB950FF"
-            }
-          }
-        },
-        {
           "id": "console-4-name-light",
           "name": "light console 5 name",
           "render": "1 - system.dark",
           "parent": "console-4",
           "x": "0",
-          "y": "5",
+          "y": "16",
           "width": "96",
           "height": "13",
           "content": {
@@ -3466,52 +3047,6 @@
             "align": "left",
             "color": {
               "color": "#8A6D00FF"
-            }
-          }
-        },
-        {
-          "id": "console-4-working-light",
-          "name": "light console 5 working",
-          "render": "1 - system.dark && consoles.4.busy",
-          "parent": "console-4",
-          "x": "0",
-          "y": "28",
-          "width": "96",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "● Working",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "semibold",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#B35F00FF"
-            }
-          }
-        },
-        {
-          "id": "console-4-available-light",
-          "name": "light console 5 available",
-          "render": "1 - system.dark && !consoles.4.busy",
-          "parent": "console-4",
-          "x": "0",
-          "y": "28",
-          "width": "96",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "● Available",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "semibold",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#1A7F37FF"
             }
           }
         },
@@ -3523,7 +3058,6 @@
           "width": "96",
           "height": "46",
           "mouse_events": {
-            "click": "focus_console(5)",
             "right_click": "show_context_menu(\"classic-v1\")"
           }
         },
@@ -3533,7 +3067,7 @@
           "render": "system.dark",
           "parent": "console-5",
           "x": "0",
-          "y": "5",
+          "y": "16",
           "width": "96",
           "height": "13",
           "content": {
@@ -3551,58 +3085,12 @@
           }
         },
         {
-          "id": "console-5-working-dark",
-          "name": "dark console 6 working",
-          "render": "system.dark && consoles.5.busy",
-          "parent": "console-5",
-          "x": "0",
-          "y": "28",
-          "width": "96",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "● Working",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "semibold",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#F0A33AFF"
-            }
-          }
-        },
-        {
-          "id": "console-5-available-dark",
-          "name": "dark console 6 available",
-          "render": "system.dark && !consoles.5.busy",
-          "parent": "console-5",
-          "x": "0",
-          "y": "28",
-          "width": "96",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "● Available",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "semibold",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#3FB950FF"
-            }
-          }
-        },
-        {
           "id": "console-5-name-light",
           "name": "light console 6 name",
           "render": "1 - system.dark",
           "parent": "console-5",
           "x": "0",
-          "y": "5",
+          "y": "16",
           "width": "96",
           "height": "13",
           "content": {
@@ -3616,52 +3104,6 @@
             "align": "left",
             "color": {
               "color": "#8A6D00FF"
-            }
-          }
-        },
-        {
-          "id": "console-5-working-light",
-          "name": "light console 6 working",
-          "render": "1 - system.dark && consoles.5.busy",
-          "parent": "console-5",
-          "x": "0",
-          "y": "28",
-          "width": "96",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "● Working",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "semibold",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#B35F00FF"
-            }
-          }
-        },
-        {
-          "id": "console-5-available-light",
-          "name": "light console 6 available",
-          "render": "1 - system.dark && !consoles.5.busy",
-          "parent": "console-5",
-          "x": "0",
-          "y": "28",
-          "width": "96",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "● Available",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "semibold",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#1A7F37FF"
             }
           }
         }

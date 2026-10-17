@@ -2,7 +2,6 @@
 
 mod accounts;
 mod app_settings;
-mod claude_consoles;
 mod context_menu;
 mod dashboard;
 mod desktop_compositor;
