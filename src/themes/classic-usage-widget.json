@@ -1860,8 +1860,8 @@
           }
         },
         {
-          "id": "omniroute-latency-dark",
-          "name": "dark OmniRoute latency",
+          "id": "omniroute-up-dark",
+          "name": "dark OmniRoute up",
           "render": "system.dark && (services.omniroute.status == 1 || services.omniroute.status == 2)",
           "parent": "omniroute-status",
           "x": "14",
@@ -1870,7 +1870,7 @@
           "height": "13",
           "content": {
             "type": "text",
-            "template": "{services.omniroute.latency_ms:0} ms",
+            "template": "on",
             "font_family": "Segoe UI",
             "font_size": "12",
             "weight": "medium",
@@ -1929,8 +1929,8 @@
           }
         },
         {
-          "id": "omniroute-latency-light",
-          "name": "light OmniRoute latency",
+          "id": "omniroute-up-light",
+          "name": "light OmniRoute up",
           "render": "1 - system.dark && (services.omniroute.status == 1 || services.omniroute.status == 2)",
           "parent": "omniroute-status",
           "x": "14",
@@ -1939,7 +1939,7 @@
           "height": "13",
           "content": {
             "type": "text",
-            "template": "{services.omniroute.latency_ms:0} ms",
+            "template": "on",
             "font_family": "Segoe UI",
             "font_size": "12",
             "weight": "medium",
@@ -2148,8 +2148,8 @@
           }
         },
         {
-          "id": "nobrain-latency-dark",
-          "name": "dark NOBRAIN latency",
+          "id": "nobrain-up-dark",
+          "name": "dark NOBRAIN up",
           "render": "system.dark && (services.nobrain.status == 1 || services.nobrain.status == 2)",
           "parent": "nobrain-status",
           "x": "14",
@@ -2158,7 +2158,7 @@
           "height": "13",
           "content": {
             "type": "text",
-            "template": "{services.nobrain.latency_ms:0} ms",
+            "template": "on",
             "font_family": "Segoe UI",
             "font_size": "12",
             "weight": "medium",
@@ -2217,8 +2217,8 @@
           }
         },
         {
-          "id": "nobrain-latency-light",
-          "name": "light NOBRAIN latency",
+          "id": "nobrain-up-light",
+          "name": "light NOBRAIN up",
           "render": "1 - system.dark && (services.nobrain.status == 1 || services.nobrain.status == 2)",
           "parent": "nobrain-status",
           "x": "14",
@@ -2227,7 +2227,7 @@
           "height": "13",
           "content": {
             "type": "text",
-            "template": "{services.nobrain.latency_ms:0} ms",
+            "template": "on",
             "font_family": "Segoe UI",
             "font_size": "12",
             "weight": "medium",
@@ -2436,8 +2436,8 @@
           }
         },
         {
-          "id": "claudemem-latency-dark",
-          "name": "dark claude-mem latency",
+          "id": "claudemem-up-dark",
+          "name": "dark claude-mem up",
           "render": "system.dark && (services.claudemem.status == 1 || services.claudemem.status == 2)",
           "parent": "claudemem-status",
           "x": "14",
@@ -2446,7 +2446,7 @@
           "height": "13",
           "content": {
             "type": "text",
-            "template": "{services.claudemem.latency_ms:0} ms",
+            "template": "on",
             "font_family": "Segoe UI",
             "font_size": "12",
             "weight": "medium",
@@ -2505,8 +2505,8 @@
           }
         },
         {
-          "id": "claudemem-latency-light",
-          "name": "light claude-mem latency",
+          "id": "claudemem-up-light",
+          "name": "light claude-mem up",
           "render": "1 - system.dark && (services.claudemem.status == 1 || services.claudemem.status == 2)",
           "parent": "claudemem-status",
           "x": "14",
@@ -2515,7 +2515,7 @@
           "height": "13",
           "content": {
             "type": "text",
-            "template": "{services.claudemem.latency_ms:0} ms",
+            "template": "on",
             "font_family": "Segoe UI",
             "font_size": "12",
             "weight": "medium",

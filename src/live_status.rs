@@ -48,7 +48,6 @@ pub struct SystemSnapshot {
 pub struct ServiceSnapshot {
     /// `unknown`, `up`, `degraded` or `down`.
     pub status: &'static str,
-    pub latency_ms: u32,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -85,7 +84,6 @@ impl From<ServiceHealth> for ServiceSnapshot {
                 ServiceStatus::Degraded => "degraded",
                 ServiceStatus::Down => "down",
             },
-            latency_ms: h.latency_ms,
         }
     }
 }
@@ -161,20 +159,8 @@ mod tests {
                 }
                 .into(),
             ),
-            omniroute: Some(
-                ServiceHealth {
-                    status: ServiceStatus::Up,
-                    latency_ms: 3,
-                }
-                .into(),
-            ),
-            claude_mem: Some(
-                ServiceHealth {
-                    status: ServiceStatus::Down,
-                    latency_ms: 0,
-                }
-                .into(),
-            ),
+            omniroute: Some(ServiceHealth::from(ServiceStatus::Up).into()),
+            claude_mem: Some(ServiceHealth::from(ServiceStatus::Down).into()),
             nobrain: None,
             firecrawl: Some(
                 CreditUsage {

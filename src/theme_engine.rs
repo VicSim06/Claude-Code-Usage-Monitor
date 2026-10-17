@@ -1499,10 +1499,6 @@ impl DataContext {
             "services.omniroute.status",
             f64::from(runtime.omniroute.status.code()),
         );
-        context.insert(
-            "services.omniroute.latency_ms",
-            f64::from(runtime.omniroute.latency_ms),
-        );
         let firecrawl = runtime.firecrawl;
         context.insert("services.firecrawl.status", f64::from(firecrawl.status));
         context.insert("services.firecrawl.used", f64::from(firecrawl.used()));
@@ -1517,16 +1513,8 @@ impl DataContext {
             f64::from(runtime.nobrain.status.code()),
         );
         context.insert(
-            "services.nobrain.latency_ms",
-            f64::from(runtime.nobrain.latency_ms),
-        );
-        context.insert(
             "services.claudemem.status",
             f64::from(runtime.claude_mem.status.code()),
-        );
-        context.insert(
-            "services.claudemem.latency_ms",
-            f64::from(runtime.claude_mem.latency_ms),
         );
         let consoles = crate::claude_consoles::latest();
         context.insert("consoles.count", consoles.len() as f64);

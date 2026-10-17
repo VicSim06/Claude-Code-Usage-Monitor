@@ -1,56 +1,45 @@
 //! Health of servers running on this machine, published to themes as
-//! `services.<name>.*` bindings: the OmniRoute gateway, the NOBRAIN
-//! dashboard and the claude-mem worker.
+//! `services.<name>.status`: the OmniRoute gateway, the NOBRAIN engine and the
+//! claude-mem worker.
 //!
-//! The check is an HTTP call, so unlike the machine counters it never runs on
-//! the window thread: a background thread per service probes on its own
-//! schedule and the widget only reads the last answer. The thread starts on
-//! the first read and stays idle whenever nothing has asked for a reading
-//! recently, so a theme without the row, or the setting switched off, costs
-//! nothing.
+//! The widget does not probe them itself: NOBRAIN's engine is the one source,
+//! and its read-only `sante` action reports OmniRoute and claude-mem. NOBRAIN
+//! is up when the engine answers. With the engine stopped, NOBRAIN reads down
+//! and the other two unknown.
+//!
+//! The call takes seconds (the engine checks git and gh too), so it never runs
+//! on the window thread: a background thread asks on its own schedule and the
+//! widget only reads the last answer. The thread starts on the first read and
+//! stays idle whenever nothing has asked for a reading recently, so a theme
+//! without these rows, or the rows switched off, costs nothing.
 
 use std::sync::{Mutex, OnceLock};
 use std::time::{Duration, Instant};
 
-// URLs use the IPv4 literal rather than `localhost`: both servers listen on
-// IPv4 only, and resolving `localhost` tries `::1` first, which turned a
-// 10 ms check into more than a second.
-pub static OMNIROUTE: LocalService = LocalService::new(
-    "omniroute-health",
-    "http://127.0.0.1:20128/api/health",
-    omniroute_healthy,
-);
+/// The IPv4 literal rather than `localhost`: the server listens on IPv4 only,
+/// and resolving `localhost` tries `::1` first, which costs more than a second.
+const SANTE_URL: &str = "http://127.0.0.1:4310/api/action/sante";
 
-/// NOBRAIN has no health route: its dashboard page answering is the check.
-/// Port from NOBRAIN's `config.json`.
-pub static NOBRAIN: LocalService =
-    LocalService::new("nobrain-health", "http://127.0.0.1:4310/", |code, _| {
-        code == 200
-    });
+pub static OMNIROUTE: LocalService = LocalService(|reading| reading.omniroute);
+pub static NOBRAIN: LocalService = LocalService(|reading| reading.nobrain);
+pub static CLAUDE_MEM: LocalService = LocalService(|reading| reading.claude_mem);
 
-/// claude-mem's worker answers `{"status":"ok"}` like OmniRoute; its
-/// dashboard is the root page.
-pub static CLAUDE_MEM: LocalService = LocalService::new(
-    "claude-mem-health",
-    "http://127.0.0.1:37777/api/health",
-    omniroute_healthy,
-);
-
-const PROBE_INTERVAL: Duration = Duration::from_secs(15);
-/// Short because the server is on this machine: anything slower is down.
-const PROBE_TIMEOUT: Duration = Duration::from_secs(2);
-/// Stop probing once nobody has read a result for this long.
-const IDLE_AFTER: Duration = Duration::from_secs(60);
+/// `sante` is not cheap for the engine: once a minute is enough.
+const POLL_INTERVAL: Duration = Duration::from_secs(60);
+/// `sante` takes about 4 s; anything far slower is a stuck engine.
+const POLL_TIMEOUT: Duration = Duration::from_secs(15);
+/// Stop asking once nobody has read a result for this long.
+const IDLE_AFTER: Duration = Duration::from_secs(120);
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum ServiceStatus {
-    /// Not probed yet this session.
+    /// Not known: not read yet, or the engine cannot tell.
     #[default]
     Unknown,
     Up,
     /// Something answered, but not with a healthy status.
     Degraded,
-    /// Nothing listening, or no answer within the timeout.
+    /// Not running, or not reachable.
     Down,
 }
 
@@ -69,182 +58,185 @@ impl ServiceStatus {
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct ServiceHealth {
     pub status: ServiceStatus,
-    /// Round trip of the last answer; 0 when there was none.
-    pub latency_ms: u32,
 }
 
-fn omniroute_healthy(code: u16, body: &str) -> bool {
-    code == 200
-        && serde_json::from_str::<serde_json::Value>(body)
-            .ok()
-            .and_then(|value| value.get("status")?.as_str().map(|s| s == "ok"))
-            .unwrap_or(false)
+impl From<ServiceStatus> for ServiceHealth {
+    fn from(status: ServiceStatus) -> Self {
+        Self { status }
+    }
 }
 
-/// Classifies one probe. `response` is the HTTP status and body, or `None`
-/// when the connection failed or timed out.
-pub fn health_from(
-    response: Option<(u16, &str)>,
-    latency: Duration,
-    healthy: fn(u16, &str) -> bool,
-) -> ServiceHealth {
+/// What one `sante` call says about the three services.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct Reading {
+    pub nobrain: ServiceHealth,
+    pub omniroute: ServiceHealth,
+    pub claude_mem: ServiceHealth,
+}
+
+/// Reads one `sante` answer: the HTTP status and body, or `None` when the
+/// engine did not answer.
+pub fn reading_from(response: Option<(u16, &str)>) -> Reading {
     let Some((code, body)) = response else {
-        return ServiceHealth {
-            status: ServiceStatus::Down,
-            latency_ms: 0,
+        return Reading {
+            nobrain: ServiceStatus::Down.into(),
+            ..Reading::default()
         };
     };
-    let healthy = healthy(code, body);
-    ServiceHealth {
-        status: if healthy {
-            ServiceStatus::Up
-        } else {
-            ServiceStatus::Degraded
-        },
-        latency_ms: latency.as_millis().min(u128::from(u32::MAX)) as u32,
+    let value = serde_json::from_str::<serde_json::Value>(body).ok();
+    let Some(controls) = value
+        .as_ref()
+        .filter(|value| code == 200 && value["ok"] == true)
+        .and_then(|value| value["resultat"]["controles"].as_array())
+    else {
+        return Reading {
+            nobrain: ServiceStatus::Degraded.into(),
+            ..Reading::default()
+        };
+    };
+    let service = |id: &str| -> ServiceHealth {
+        let state = controls
+            .iter()
+            .find(|control| control["groupe"] == "services" && control["id"] == id)
+            .and_then(|control| control["etat"].as_str());
+        match state {
+            Some("ok") => ServiceStatus::Up,
+            Some("alerte") => ServiceStatus::Down,
+            _ => ServiceStatus::Unknown,
+        }
+        .into()
+    };
+    Reading {
+        nobrain: ServiceStatus::Up.into(),
+        omniroute: service("omniroute"),
+        claude_mem: service("claude-mem"),
+    }
+}
+
+/// One of the services, read from the shared engine reading.
+pub struct LocalService(fn(&Reading) -> ServiceHealth);
+
+impl LocalService {
+    /// The last known health. The first call starts the reading thread and
+    /// returns `Unknown` until the engine's first answer lands.
+    pub fn latest(&'static self) -> ServiceHealth {
+        let mut guard = shared().lock().unwrap_or_else(|error| error.into_inner());
+        guard.last_read = Instant::now();
+        (self.0)(&guard.latest)
     }
 }
 
 struct Shared {
-    latest: ServiceHealth,
+    latest: Reading,
     last_read: Instant,
 }
 
-pub struct LocalService {
-    thread_name: &'static str,
-    pub url: &'static str,
-    healthy: fn(u16, &str) -> bool,
-    shared: OnceLock<Mutex<Shared>>,
+fn shared() -> &'static Mutex<Shared> {
+    static SHARED: OnceLock<Mutex<Shared>> = OnceLock::new();
+    SHARED.get_or_init(|| {
+        std::thread::Builder::new()
+            .name("nobrain-sante".into())
+            .spawn(poll_loop)
+            .ok();
+        Mutex::new(Shared {
+            latest: Reading::default(),
+            last_read: Instant::now(),
+        })
+    })
 }
 
-impl LocalService {
-    const fn new(
-        thread_name: &'static str,
-        url: &'static str,
-        healthy: fn(u16, &str) -> bool,
-    ) -> Self {
-        Self {
-            thread_name,
-            url,
-            healthy,
-            shared: OnceLock::new(),
+fn poll_loop() {
+    // No proxy: a system proxy would turn a local call into a remote one.
+    let agent: ureq::Agent = ureq::Agent::config_builder()
+        .timeout_global(Some(POLL_TIMEOUT))
+        .http_status_as_error(false)
+        .proxy(None)
+        .build()
+        .into();
+    loop {
+        let wanted = {
+            let guard = shared().lock().unwrap_or_else(|error| error.into_inner());
+            guard.last_read.elapsed() <= IDLE_AFTER
+        };
+        if wanted {
+            let reading = ask_sante(&agent);
+            shared()
+                .lock()
+                .unwrap_or_else(|error| error.into_inner())
+                .latest = reading;
         }
+        std::thread::sleep(POLL_INTERVAL);
     }
+}
 
-    fn shared(&'static self) -> &'static Mutex<Shared> {
-        self.shared.get_or_init(|| {
-            std::thread::Builder::new()
-                .name(self.thread_name.into())
-                .spawn(|| self.probe_loop())
-                .ok();
-            Mutex::new(Shared {
-                latest: ServiceHealth::default(),
-                last_read: Instant::now(),
-            })
-        })
-    }
-
-    /// The last known health. The first call starts the probing thread and
-    /// returns `Unknown` until its first answer lands.
-    pub fn latest(&'static self) -> ServiceHealth {
-        let mut guard = self
-            .shared()
-            .lock()
-            .unwrap_or_else(|error| error.into_inner());
-        guard.last_read = Instant::now();
-        guard.latest
-    }
-
-    fn probe_loop(&'static self) {
-        // No proxy: a system proxy would turn a local check into a remote one.
-        let agent: ureq::Agent = ureq::Agent::config_builder()
-            .timeout_global(Some(PROBE_TIMEOUT))
-            .http_status_as_error(false)
-            .proxy(None)
-            .build()
-            .into();
-        loop {
-            let wanted = {
-                let guard = self
-                    .shared()
-                    .lock()
-                    .unwrap_or_else(|error| error.into_inner());
-                guard.last_read.elapsed() <= IDLE_AFTER
-            };
-            if wanted {
-                let health = self.probe(&agent);
-                self.shared()
-                    .lock()
-                    .unwrap_or_else(|error| error.into_inner())
-                    .latest = health;
-            }
-            std::thread::sleep(PROBE_INTERVAL);
-        }
-    }
-
-    fn probe(&self, agent: &ureq::Agent) -> ServiceHealth {
-        let started = Instant::now();
-        let response = agent.get(self.url).call().ok().map(|mut response| {
+/// Read-only: `sante` changes nothing in NOBRAIN.
+fn ask_sante(agent: &ureq::Agent) -> Reading {
+    let response = agent
+        .post(SANTE_URL)
+        .header("X-NOBRAIN", "1")
+        .header("Content-Type", "application/json")
+        .send("{}")
+        .ok()
+        .map(|mut response| {
             let code = response.status().as_u16();
             let body = response
                 .body_mut()
                 .with_config()
-                .limit(4 * 1024)
+                .limit(256 * 1024)
                 .read_to_string()
                 .unwrap_or_default();
             (code, body)
         });
-        health_from(
-            response.as_ref().map(|(code, body)| (*code, body.as_str())),
-            started.elapsed(),
-            self.healthy,
-        )
-    }
+    reading_from(response.as_ref().map(|(code, body)| (*code, body.as_str())))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    const FAST: Duration = Duration::from_millis(4);
+    const SANTE: &str = r#"{"ok":true,"resultat":{"le":"x","alertes":1,"controles":[
+        {"groupe":"moteur","id":"registre","etat":"ok","detail":"valide"},
+        {"groupe":"services","id":"omniroute","etat":"alerte","detail":"injoignable"},
+        {"groupe":"services","id":"claude-mem","etat":"ok","detail":"worker joignable"},
+        {"groupe":"confidentialite","id":"claude-mem","etat":"alerte","detail":"x"}]}}"#;
 
     #[test]
-    fn a_healthy_answer_reads_up_with_its_latency() {
-        let health = health_from(
-            Some((200, r#"{"status":"ok","timestamp":"x"}"#)),
-            FAST,
-            omniroute_healthy,
-        );
-        assert_eq!(health.status, ServiceStatus::Up);
-        assert_eq!(health.latency_ms, 4);
+    fn services_come_from_the_engine_health_report() {
+        let reading = reading_from(Some((200, SANTE)));
+        assert_eq!(reading.nobrain.status, ServiceStatus::Up);
+        assert_eq!(reading.omniroute.status, ServiceStatus::Down);
+        assert_eq!(reading.claude_mem.status, ServiceStatus::Up);
     }
 
     #[test]
-    fn no_answer_reads_down() {
-        let health = health_from(None, Duration::from_secs(2), omniroute_healthy);
-        assert_eq!(health.status, ServiceStatus::Down);
-        assert_eq!(health.latency_ms, 0);
+    fn a_stopped_engine_reads_down_and_leaves_the_others_unknown() {
+        let reading = reading_from(None);
+        assert_eq!(reading.nobrain.status, ServiceStatus::Down);
+        assert_eq!(reading.omniroute.status, ServiceStatus::Unknown);
+        assert_eq!(reading.claude_mem.status, ServiceStatus::Unknown);
     }
 
     #[test]
-    fn an_error_status_or_unhealthy_body_reads_degraded() {
+    fn an_engine_without_the_action_reads_degraded() {
+        // An older server answers 404 `{"erreur":"Introuvable"}`.
         for (code, body) in [
-            (500, r#"{"status":"ok"}"#),
-            (200, r#"{"status":"starting"}"#),
-            (200, "<html>not json</html>"),
+            (404, r#"{"erreur":"Introuvable"}"#),
+            (200, r#"{"ok":false,"erreur":"x"}"#),
+            (200, "<html>"),
         ] {
-            let health = health_from(Some((code, body)), FAST, omniroute_healthy);
-            assert_eq!(health.status, ServiceStatus::Degraded, "{code} {body}");
+            let reading = reading_from(Some((code, body)));
+            assert_eq!(reading.nobrain.status, ServiceStatus::Degraded, "{code} {body}");
+            assert_eq!(reading.omniroute.status, ServiceStatus::Unknown);
         }
     }
 
     #[test]
-    fn nobrain_reads_up_on_its_page_and_degraded_on_an_error() {
-        let healthy = NOBRAIN.healthy;
-        let up = health_from(Some((200, "<!doctype html>")), FAST, healthy);
-        assert_eq!(up.status, ServiceStatus::Up);
-        let broken = health_from(Some((500, "")), FAST, healthy);
-        assert_eq!(broken.status, ServiceStatus::Degraded);
+    fn a_service_the_engine_cannot_check_reads_unknown() {
+        let body = r#"{"ok":true,"resultat":{"controles":[
+            {"groupe":"services","id":"omniroute","etat":"inconnu","detail":""}]}}"#;
+        let reading = reading_from(Some((200, body)));
+        assert_eq!(reading.omniroute.status, ServiceStatus::Unknown);
+        assert_eq!(reading.claude_mem.status, ServiceStatus::Unknown);
     }
 
     #[test]

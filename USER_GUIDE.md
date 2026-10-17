@@ -155,22 +155,23 @@ hidden row should not leave a gap behind.
 ### OmniRoute status
 
 The default theme ends with the health of the local OmniRoute gateway: a green
-dot and its response time when it is running, amber when it answers but does
-not report itself healthy, red with `off` when nothing answers, and grey until
-the first check lands.
+dot and `on` when it is running, red with `off` when it is not, and grey with
+`--` while it is not known.
 
 1. Open **Settings > General**.
 2. Set **OmniRoute status** to **Enabled** or **Disabled**. Switching it off
    removes the block and its taskbar space.
 
-The widget asks `http://127.0.0.1:20128/api/health` every 15 seconds from a
-background thread, never from the window itself, with a 2 second timeout and
-no proxy. Checks stop while no theme or setting needs them.
+The widget does not check OmniRoute itself: it reads the `sante` report of the
+local NOBRAIN engine (`POST http://127.0.0.1:4310/api/action/sante` with the
+header `X-NOBRAIN: 1`), once a minute, from a background thread, never from the
+window itself, with no proxy. The call only reads. It stops while no theme or
+setting needs the OmniRoute, NOBRAIN or claude-mem rows. With NOBRAIN stopped,
+OmniRoute and claude-mem read as not known.
 
 | Binding | Meaning |
 | --- | --- |
-| `services.omniroute.status` | 0 not checked yet, 1 up, 2 answering but unhealthy, 3 down. |
-| `services.omniroute.latency_ms` | Round trip of the last answer, in milliseconds; 0 when down. |
+| `services.omniroute.status` | 0 not known, 1 up, 3 down (NOBRAIN reports an alert). |
 | `display.omniroute` | 1 when the user has **OmniRoute status** enabled, 0 when not. |
 
 ### Firecrawl credits
@@ -198,32 +199,30 @@ every 5 minutes; requests stop while no theme or setting needs them.
 
 ### NOBRAIN status
 
-After OmniRoute comes the local NOBRAIN dashboard, with the same dot,
-response time and colours. Click the block to open the dashboard in the
-browser. **Settings > General > NOBRAIN status** shows or hides it.
+After OmniRoute comes the local NOBRAIN engine, with the same dot and
+colours. Click the block to open the dashboard at `http://127.0.0.1:4310/` in
+the browser. **Settings > General > NOBRAIN status** shows or hides it.
 
-The widget loads `http://127.0.0.1:4310/` on the same schedule as the
-OmniRoute check; any page that answers 200 counts as up.
+NOBRAIN is up when its `sante` report (see OmniRoute above) comes back. Amber
+means the engine answered without the report, for example an older server
+without `/api/action`.
 
 | Binding | Meaning |
 | --- | --- |
-| `services.nobrain.status` | 0 not checked yet, 1 up, 2 answering with an error, 3 down. |
-| `services.nobrain.latency_ms` | Round trip of the last answer, in milliseconds; 0 when down. |
+| `services.nobrain.status` | 0 not checked yet, 1 up, 2 answering without the report, 3 down. |
 | `display.nobrain` | 1 when the user has **NOBRAIN status** enabled, 0 when not. |
 
 ### claude-mem status
 
-After NOBRAIN comes the local claude-mem worker, with the same dot,
-response time and colours. Click the block to open its dashboard in the
-browser. **Settings > General > claude-mem status** shows or hides it.
+After NOBRAIN comes the local claude-mem worker, with the same dot and
+colours. Click the block to open its dashboard in the browser.
+**Settings > General > claude-mem status** shows or hides it.
 
-The widget calls `http://127.0.0.1:37777/api/health` on the same schedule as
-the OmniRoute check; a 200 answer with `"status":"ok"` counts as up.
+Like OmniRoute, its state comes from NOBRAIN's `sante` report.
 
 | Binding | Meaning |
 | --- | --- |
-| `services.claudemem.status` | 0 not checked yet, 1 up, 2 answering with an error, 3 down. |
-| `services.claudemem.latency_ms` | Round trip of the last answer, in milliseconds; 0 when down. |
+| `services.claudemem.status` | 0 not known, 1 up, 3 down (NOBRAIN reports an alert). |
 | `display.claudemem` | 1 when the user has **claude-mem status** enabled, 0 when not. |
 
 ## Claude extra limits in custom themes
