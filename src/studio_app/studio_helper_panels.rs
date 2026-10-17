@@ -95,12 +95,6 @@ pub(super) const TEXT_TEMPLATE_VALUES: &[TextTemplateValue] = &[
     },
     TextTemplateValue {
         group: "System",
-        label: "OmniRoute latency (ms)",
-        expression: "services.omniroute.latency_ms",
-        kind: TextTemplateValueKind::Number,
-    },
-    TextTemplateValue {
-        group: "System",
         label: "Firecrawl credits used",
         expression: "services.firecrawl.used",
         kind: TextTemplateValueKind::Number,
@@ -125,20 +119,8 @@ pub(super) const TEXT_TEMPLATE_VALUES: &[TextTemplateValue] = &[
     },
     TextTemplateValue {
         group: "System",
-        label: "NOBRAIN latency (ms)",
-        expression: "services.nobrain.latency_ms",
-        kind: TextTemplateValueKind::Number,
-    },
-    TextTemplateValue {
-        group: "System",
         label: "claude-mem status",
         expression: "services.claudemem.status",
-        kind: TextTemplateValueKind::Number,
-    },
-    TextTemplateValue {
-        group: "System",
-        label: "claude-mem latency (ms)",
-        expression: "services.claudemem.latency_ms",
         kind: TextTemplateValueKind::Number,
     },
     TextTemplateValue {
@@ -1405,16 +1387,13 @@ pub(super) fn expression_variables_panel(
                     "system.network.up_mbps",
                     "system.network.kind",
                     "services.omniroute.status",
-                    "services.omniroute.latency_ms",
                     "services.firecrawl.status",
                     "services.firecrawl.used",
                     "services.firecrawl.plan",
                     "services.firecrawl.remaining",
                     "services.firecrawl.percentage",
                     "services.nobrain.status",
-                    "services.nobrain.latency_ms",
                     "services.claudemem.status",
-                    "services.claudemem.latency_ms",
                 ];
                 expression_variable_group(
                     ui,

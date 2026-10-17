@@ -4,6 +4,20 @@ Notable changes to Claude Code Usage Monitor are documented here, newest first.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), with
 changes grouped into Added, Changed, Fixed, and Removed where applicable.
 
+## [Unreleased]
+
+### Changed
+
+- OmniRoute, claude-mem and NOBRAIN are no longer probed by the widget: their state comes from the read-only `sante` action of the local NOBRAIN engine (`POST /api/action/sante`, header `X-NOBRAIN: 1`), once a minute. With the engine stopped, NOBRAIN reads down and the other two unknown; usage quotas are unaffected.
+- The Classic theme shows `on` instead of a response time next to a running service.
+- The open Claude Code consoles now come from the same engine: the widget shows the sessions NOBRAIN lists as open (`jour` action, every 15 s), and `consoles.<n>.name` is their project, so the widget and NOBRAIN count the same sessions. For each of them, the widget still reads that session's own file in `~/.claude/sessions` (matched by session id) for its process and working state, which NOBRAIN does not keep: clicking a console still brings it to the front, and **Working**/**Available** still show.
+- Added `consoles.<n>.live`: 0 when a session NOBRAIN lists as open has no running Claude Code process (a crashed console). The Classic theme shows it with a grey `● --`.
+- A click on a console while the previous one is still being brought to the front is ignored: two focus requests no longer run at the same time.
+
+### Removed
+
+- Removed the `services.omniroute.latency_ms`, `services.nobrain.latency_ms` and `services.claudemem.latency_ms` bindings, and `latency_ms` from the service entries of `live-status.json`: NOBRAIN does not report it.
+
 ## [2.18.0] - 2026-10-10
 
 ### Added
