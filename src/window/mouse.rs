@@ -120,6 +120,7 @@ pub(super) fn execute_mouse_action_source(
                     MouseActionEffect::OpenUrl(url) => {
                         open_web_url(owner, &url, "mouse action URL could not be opened")
                     }
+                    MouseActionEffect::FocusConsole(slot) => crate::claude_consoles::focus(slot),
                     MouseActionEffect::ShowContextMenu(menu) => show_context_menu_document(
                         owner,
                         menu.as_deref(),

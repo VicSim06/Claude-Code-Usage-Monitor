@@ -2920,8 +2920,7 @@ fn refresh_system_metrics() {
         s.firecrawl = crate::firecrawl::latest();
     }
     if s.theme_uses_consoles {
-        // Keeps the NOBRAIN reader asking `jour` for the consoles.
-        crate::local_services::NOBRAIN.latest();
+        crate::claude_consoles::refresh();
     }
     let live = crate::live_status::LiveStatus {
         updated_unix: crate::live_status::now_unix(),

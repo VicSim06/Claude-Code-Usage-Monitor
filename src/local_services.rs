@@ -3,8 +3,8 @@
 //! - the health of the OmniRoute gateway, the NOBRAIN engine and the
 //!   claude-mem worker, published as `services.<name>.status`, from the
 //!   engine's `sante` action. NOBRAIN is up when the engine answers;
-//! - the open Claude Code consoles, published as `consoles.count` and
-//!   `consoles.<n>.name`, from its `jour` action.
+//! - the open Claude Code consoles, from its `jour` action (see
+//!   `claude_consoles` for what the widget adds to each).
 //!
 //! Both actions only read: the widget never writes to NOBRAIN. With the engine
 //! stopped, NOBRAIN reads down, the other services unknown, and no console is
@@ -123,16 +123,28 @@ pub fn reading_from(response: Option<(u16, &str)>) -> Reading {
     }
 }
 
+/// A console NOBRAIN lists as open.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct OpenSession {
+    /// Claude Code's session id.
+    pub id: String,
+    /// The project of the session, `-` for one without a project yet.
+    pub projet: String,
+}
+
 /// The open consoles in one `jour` answer, oldest first as the engine lists
-/// them: the project of each session, `-` for one without a project yet.
-pub fn consoles_from(response: Option<(u16, &str)>) -> Vec<String> {
+/// them.
+pub fn consoles_from(response: Option<(u16, &str)>) -> Vec<OpenSession> {
     let result = response.and_then(|(code, body)| result_of(code, body));
     let Some(list) = result.as_ref().and_then(|r| r["sessions"]["liste"].as_array()) else {
         return Vec::new();
     };
     list.iter()
         .take(MAX_CONSOLES)
-        .map(|session| session["projet"].as_str().unwrap_or("-").to_owned())
+        .map(|session| OpenSession {
+            id: session["id"].as_str().unwrap_or_default().to_owned(),
+            projet: session["projet"].as_str().unwrap_or("-").to_owned(),
+        })
         .collect()
 }
 
@@ -151,7 +163,7 @@ impl LocalService {
 
 /// The open consoles from the last `jour` answer. Does not start or wake the
 /// reading thread: whoever shows them calls `latest()` for that.
-pub fn consoles() -> Vec<String> {
+pub fn consoles() -> Vec<OpenSession> {
     SHARED.get().map_or_else(Vec::new, |shared| {
         shared
             .lock()
@@ -163,7 +175,7 @@ pub fn consoles() -> Vec<String> {
 
 struct Shared {
     latest: Reading,
-    consoles: Vec<String>,
+    consoles: Vec<OpenSession>,
     last_read: Instant,
 }
 
@@ -293,7 +305,7 @@ mod tests {
 
     #[test]
     fn consoles_are_the_engine_open_sessions_up_to_the_slot_count() {
-        let session = |projet: &str| format!(r#"{{"id":"x","projet":{projet},"debut":"t"}}"#);
+        let session = |projet: &str| format!(r#"{{"id":"s1","projet":{projet},"debut":"t"}}"#);
         let mut list: Vec<String> = vec![session(r#""coeur-fou""#), session("null")];
         list.extend((0..6).map(|_| session(r#""nobrain""#)));
         let body = format!(
@@ -302,7 +314,9 @@ mod tests {
         );
         let consoles = consoles_from(Some((200, &body)));
         assert_eq!(consoles.len(), MAX_CONSOLES);
-        assert_eq!(consoles[..3], ["coeur-fou", "-", "nobrain"]);
+        let projets: Vec<&str> = consoles.iter().map(|c| c.projet.as_str()).collect();
+        assert_eq!(projets[..3], ["coeur-fou", "-", "nobrain"]);
+        assert_eq!(consoles[0].id, "s1");
     }
 
     #[test]

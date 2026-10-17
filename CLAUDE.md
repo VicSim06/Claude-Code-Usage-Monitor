@@ -12,7 +12,7 @@ Les lignes live sont écrites dans `%APPDATA%\ClaudeCodeUsageMonitor\live-status
 
 ## Architecture
 - `src/main.rs` : point d'entrée ; `window/` : fenêtre dans la barre des tâches ; `dashboard.rs` + `studio_app/` : réglages et Theme Studio (egui).
-- `poller/` : un module par fournisseur ; `local_services.rs` : lecteur du moteur NOBRAIN, en lecture seule (état des services par `sante`, consoles ouvertes par `jour`) ; `system_metrics/`, `firecrawl.rs`, `live_status.rs`.
+- `poller/` : un module par fournisseur ; `local_services.rs` : lecteur du moteur NOBRAIN, en lecture seule (état des services par `sante`, consoles ouvertes par `jour`) ; `claude_consoles.rs` : complète chaque session du moteur par son fichier Claude Code (pid pour le clic, état actif) ; `system_metrics/`, `firecrawl.rs`, `live_status.rs`.
 - `theme_engine/` + `themes/*.json` : thèmes et bindings (`system.*`, `services.*`, `consoles.*`) ; `localization/locales/*.toml` : 14 langues.
 - `build.rs` génère les locales (mêmes clés que `en.toml`, sinon le build casse), sous-ensembles de polices, icône et manifeste.
 - `updater.rs` prend la source des mises à jour dans `package.repository` de `Cargo.toml`.
