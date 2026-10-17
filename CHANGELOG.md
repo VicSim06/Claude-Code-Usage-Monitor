@@ -6,6 +6,8 @@ changes grouped into Added, Changed, Fixed, and Removed where applicable.
 
 ## [Unreleased]
 
+## [2.19.0] - 2026-10-17
+
 ### Changed
 
 - OmniRoute, claude-mem and NOBRAIN are no longer probed by the widget: their state comes from the read-only `sante` action of the local NOBRAIN engine (`POST /api/action/sante`, header `X-NOBRAIN: 1`), once a minute. With the engine stopped, NOBRAIN reads down and the other two unknown; usage quotas are unaffected.
