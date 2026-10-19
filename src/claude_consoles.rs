@@ -14,7 +14,6 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
 
 use serde::Deserialize;
-use windows::core::BSTR;
 use windows::Win32::Foundation::{CloseHandle, FILETIME, HWND};
 use windows::Win32::System::Com::{
     CoCreateInstance, CoInitializeEx, CoUninitialize, CLSCTX_INPROC_SERVER, COINIT_MULTITHREADED,
@@ -193,23 +192,52 @@ fn select_tab(window: HWND, title: &str) -> windows::core::Result<()> {
             let automation: IUIAutomation =
                 CoCreateInstance(&CUIAutomation, None, CLSCTX_INPROC_SERVER)?;
             let root = automation.ElementFromHandle(window)?;
-            let tabs = root.FindAll(TreeScope_Descendants, &automation.CreateTrueCondition()?)?;
-            let title = BSTR::from(title);
-            for index in 0..tabs.Length()? {
-                let tab = tabs.GetElement(index)?;
-                if tab.CurrentControlType()? == UIA_TabItemControlTypeId
-                    && tab.CurrentName()? == title
-                {
-                    let item: IUIAutomationSelectionItemPattern =
-                        tab.GetCurrentPatternAs(UIA_SelectionItemPatternId)?;
-                    return item.Select();
+            let found = root.FindAll(TreeScope_Descendants, &automation.CreateTrueCondition()?)?;
+            let mut tabs = Vec::new();
+            let mut names = Vec::new();
+            for index in 0..found.Length()? {
+                let tab = found.GetElement(index)?;
+                if tab.CurrentControlType()? == UIA_TabItemControlTypeId {
+                    names.push(tab.CurrentName()?.to_string());
+                    tabs.push(tab);
                 }
             }
-            Ok(())
+            if tabs.is_empty() {
+                return Ok(());
+            }
+            let Some(index) = matching_tab(title, &names) else {
+                crate::diagnose::log(format!(
+                    "no single terminal tab matches console title {title:?}; tabs: {names:?}"
+                ));
+                return Ok(());
+            };
+            let item: IUIAutomationSelectionItemPattern =
+                tabs[index].GetCurrentPatternAs(UIA_SelectionItemPatternId)?;
+            item.Select()
         })();
         CoUninitialize();
         result
     }
+}
+
+/// The one tab named after the console title. Claude Code puts a status
+/// glyph in front of its title, a spinner that changes while it works, so
+/// the glyph is ignored; failing an exact match, the tab whose name contains
+/// the title. `None` when no tab, or more than one, matches.
+fn matching_tab(title: &str, names: &[String]) -> Option<usize> {
+    fn bare(text: &str) -> &str {
+        text.trim_start_matches(|c: char| !c.is_alphanumeric())
+    }
+    let title = bare(title);
+    if title.is_empty() {
+        return None;
+    }
+    let single = |found: Vec<usize>| (found.len() == 1).then(|| found[0]);
+    let exact: Vec<usize> = (0..names.len()).filter(|&i| bare(&names[i]) == title).collect();
+    if !exact.is_empty() {
+        return single(exact);
+    }
+    single((0..names.len()).filter(|&i| names[i].contains(title)).collect())
 }
 
 #[cfg(test)]
@@ -270,5 +298,23 @@ mod tests {
         let consoles = enrich(&sessions, Path::new("Z:\\no\\such\\dir"), |_| Some(1));
         assert_eq!(consoles.len(), 1);
         assert_eq!(consoles[0].pid, None);
+    }
+
+    #[test]
+    fn console_title_finds_its_own_terminal_tab() {
+        let tabs = |names: &[&str]| names.iter().map(|n| n.to_string()).collect::<Vec<_>>();
+        let names = tabs(&["✳ DUST - DUST > AO", "◐ Perso - Console Claude > dev Usage widget"]);
+        // Equal titles.
+        assert_eq!(matching_tab("✳ DUST - DUST > AO", &names), Some(0));
+        // The spinner moved between reading the title and the tabs.
+        assert_eq!(matching_tab("◓ Perso - Console Claude > dev Usage widget", &names), Some(1));
+        assert_eq!(matching_tab("Perso - Console Claude > dev Usage widget", &names), Some(1));
+        // A terminal that adds to the tab name.
+        assert_eq!(matching_tab("DUST - DUST > AO", &tabs(&["Admin: DUST - DUST > AO"])), Some(0));
+        // None, or more than one.
+        assert_eq!(matching_tab("Windows PowerShell", &names), None);
+        assert_eq!(matching_tab("✳", &names), None);
+        assert_eq!(matching_tab("✳ DUST", &tabs(&["✳ DUST", "◐ DUST"])), None);
+        assert_eq!(matching_tab("DUST", &tabs(&["✳ DUST - AO", "◐ DUST - BO"])), None);
     }
 }
