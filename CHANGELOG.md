@@ -6,6 +6,12 @@ changes grouped into Added, Changed, Fixed, and Removed where applicable.
 
 ## [Unreleased]
 
+## [2.19.1] - 2026-10-19
+
+### Fixed
+
+- Clicking a console now selects its own tab when several Claude Code consoles share a Windows Terminal window. Tab names start with Claude Code's status glyph, a spinner while it works, so the exact match with the console title failed and the window kept its active tab; the glyph is now ignored. When no single tab matches, the diagnostic log records the title and the tab names.
+
 ## [2.19.0] - 2026-10-17
 
 ### Changed
