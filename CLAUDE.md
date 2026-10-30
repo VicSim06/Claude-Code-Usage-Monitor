@@ -33,6 +33,7 @@ Avant tout `gh pr` ou `gh release` : `gh repo set-default --view` doit répondre
 - Fork de `CodeZeno/Claude-Code-Usage-Monitor` (remote `upstream`) ; `origin` = `VicSim06`. Le hunk `package.repository` du `Cargo.toml` pointe sur le fork : le retirer de toute PR vers upstream.
 - Deux tests `studio_app` échouent déjà sur `main` (Windows en français) : `version_text_and_trailing_icon_share_one_update_button` et `diagnostics_page_has_logging_controls_and_menu_version`. Ce ne sont pas des régressions.
 - Services locaux : toujours `127.0.0.1`, jamais `localhost` (OmniRoute écoute en IPv4 seulement ; `localhost` coûte ~1,4 s).
+- Plantage : minidumps dans `%LOCALAPPDATA%\CrashDumps` (PDB à côté de l'exe). Le profil release fait `panic=abort`, sans console : une panique passe par `install_crash_recovery` (log `%TEMP%\claude-code-usage-monitor.log`, relance). Jamais de relance silencieuse sans ce log.
 - « Start with Windows » enregistre le dernier exe lancé (clé HKCU Run `ClaudeCodeUsageMonitor`). Après un test en `target\debug`, relancer la release et faire vérifier la clé par Victor.
 
 ## Règles

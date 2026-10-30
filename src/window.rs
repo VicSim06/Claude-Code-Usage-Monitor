@@ -9,6 +9,9 @@ use windows::Win32::Foundation::*;
 use windows::Win32::Graphics::Dwm::{DwmGetWindowAttribute, DWMWA_EXTENDED_FRAME_BOUNDS};
 use windows::Win32::Graphics::Gdi::*;
 use windows::Win32::System::LibraryLoader::{GetModuleFileNameW, GetModuleHandleW};
+use windows::Win32::System::Recovery::{
+    RegisterApplicationRestart, RESTART_NO_PATCH, RESTART_NO_REBOOT,
+};
 use windows::Win32::System::Registry::*;
 use windows::Win32::System::Threading::{CreateMutexW, WaitForSingleObject};
 use windows::Win32::UI::Accessibility::HWINEVENTHOOK;
@@ -436,6 +439,9 @@ const ENV_RELAUNCH: &str = "CCUM_RELAUNCH";
 /// Unix timestamp (seconds) of the relaunch that spawned this process, passed to
 /// the child so it can detect a relaunch storm.
 const ENV_LAST_RELAUNCH_UNIX: &str = "CCUM_LAST_RELAUNCH_UNIX";
+/// A crash from memory exhaustion can outlive the first relaunch attempts.
+const CRASH_RELAUNCH_ATTEMPTS: u32 = 12;
+const CRASH_RELAUNCH_RETRY_SECS: u64 = 5;
 
 /// Relaunch the widget as a fresh process after explorer.exe has restarted.
 ///
@@ -481,6 +487,28 @@ fn relaunch_self() {
         Err(error) => {
             diagnose::log_error("watchdog: unable to spawn relaunched instance", error);
         }
+    }
+}
+
+/// Keep one failed worker from costing the whole widget.
+///
+/// The release build aborts on panic, and a panic needs no bug: with the machine
+/// out of commit, `ureq` cannot start its DNS thread and `thread::spawn` panics
+/// (`ERROR_COMMITMENT_LIMIT`). A panic relaunches a fresh process, retrying while
+/// Windows refuses it too. What no hook sees (heap corruption, a failed
+/// allocation) is left to Windows' own restart, which waits for 60 s of uptime.
+fn install_crash_recovery(relaunch: fn()) {
+    std::panic::set_hook(Box::new(move |info| {
+        // Without a console, this log is the only trace the panic leaves.
+        let _ = diagnose::init_append();
+        diagnose::log(format!("panic: {info}"));
+        for _ in 0..CRASH_RELAUNCH_ATTEMPTS {
+            relaunch();
+            std::thread::sleep(Duration::from_secs(CRASH_RELAUNCH_RETRY_SECS));
+        }
+    }));
+    unsafe {
+        let _ = RegisterApplicationRestart(PCWSTR::null(), RESTART_NO_PATCH | RESTART_NO_REBOOT);
     }
 }
 
@@ -1977,6 +2005,8 @@ pub fn run() {
         }
     };
 
+    install_crash_recovery(relaunch_self);
+
     let class_name = native_interop::wide_str("ClaudeCodeUsageMonitor");
 
     unsafe {
@@ -3246,6 +3276,34 @@ mod poll_display_state_tests {
 
 #[cfg(test)]
 mod placement_regression_tests;
+
+#[cfg(test)]
+mod crash_recovery_tests {
+    use super::*;
+
+    #[test]
+    fn a_worker_panic_relaunches_the_widget() {
+        // The panic hook is process-wide, so this runs in a child test process.
+        const ENV_CHILD: &str = "CCUM_CRASH_RECOVERY_CHILD";
+        const RELAUNCHED: i32 = 42;
+        if std::env::var_os(ENV_CHILD).is_some() {
+            install_crash_recovery(|| std::process::exit(RELAUNCHED));
+            let _ = std::thread::spawn(|| panic!("failed to spawn thread")).join();
+            return;
+        }
+        let status = std::process::Command::new(std::env::current_exe().unwrap())
+            .args([
+                "--exact",
+                "window::crash_recovery_tests::a_worker_panic_relaunches_the_widget",
+            ])
+            .env(ENV_CHILD, "1")
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null())
+            .status()
+            .unwrap();
+        assert_eq!(status.code(), Some(RELAUNCHED));
+    }
+}
 
 #[cfg(test)]
 mod credential_watch_worker_tests {
