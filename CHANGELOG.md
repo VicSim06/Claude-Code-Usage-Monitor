@@ -6,6 +6,10 @@ changes grouped into Added, Changed, Fixed, and Removed where applicable.
 
 ## [Unreleased]
 
+### Fixed
+
+- The widget no longer disappears for good when the machine runs out of memory. A panic on any thread, such as the HTTP client failing to start its DNS thread (`ERROR_COMMITMENT_LIMIT`), used to abort the process with no trace; it now writes the panic to the diagnostic log and relaunches a fresh instance, retrying while Windows refuses. Crashes no hook can see are restarted by Windows after 60 s of uptime.
+
 ## [2.19.1] - 2026-10-19
 
 ### Fixed
