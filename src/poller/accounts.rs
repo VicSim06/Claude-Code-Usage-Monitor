@@ -135,7 +135,7 @@ where
             let groups = &groups;
             let next = &next;
             let poll = &poll;
-            scope.spawn(move || loop {
+            let spawned = std::thread::Builder::new().spawn_scoped(scope, move || loop {
                 let index = next.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
                 let Some(group) = groups.get(index) else {
                     break;
@@ -184,6 +184,11 @@ where
                     let _ = sender.send((index, target.clone(), signature.clone(), result.clone()));
                 }
             });
+            // The workers left take over; with none, the poll fails and is retried.
+            if let Err(error) = spawned {
+                diagnose::log_error("account poll worker not started", error);
+                break;
+            }
         }
         drop(sender);
         receiver
@@ -197,6 +202,12 @@ where
             })
             .collect::<Vec<_>>()
     });
+    if let (true, Some(group)) = (results.is_empty(), groups.first()) {
+        return Err(PollFailure {
+            provider: group[0].provider,
+            error: PollError::RequestFailed,
+        });
+    }
     results.sort_by_key(|(index, _, _, _)| *index);
     let mut data = AppUsageData::default();
     let mut first_error = None;

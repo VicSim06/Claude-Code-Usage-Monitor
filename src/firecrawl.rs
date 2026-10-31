@@ -122,19 +122,19 @@ pub fn latest() -> CreditUsage {
 }
 
 fn probe_loop(key: &'static str) {
-    let agent: ureq::Agent = ureq::Agent::config_builder()
-        .timeout_global(Some(PROBE_TIMEOUT))
-        .http_status_as_error(false)
-        // Same TLS as the usage pollers: only native-tls is compiled in, and
-        // ureq's default provider (Rustls) panics on the first https call.
-        .tls_config(
-            ureq::tls::TlsConfig::builder()
-                .provider(ureq::tls::TlsProvider::NativeTls)
-                .root_certs(ureq::tls::RootCerts::PlatformVerifier)
-                .build(),
-        )
-        .build()
-        .into();
+    let agent: ureq::Agent =
+        crate::poller::with_timeouts(ureq::Agent::config_builder(), PROBE_TIMEOUT)
+            .http_status_as_error(false)
+            // Same TLS as the usage pollers: only native-tls is compiled in, and
+            // ureq's default provider (Rustls) panics on the first https call.
+            .tls_config(
+                ureq::tls::TlsConfig::builder()
+                    .provider(ureq::tls::TlsProvider::NativeTls)
+                    .root_certs(ureq::tls::RootCerts::PlatformVerifier)
+                    .build(),
+            )
+            .build()
+            .into();
     loop {
         let wanted = {
             let guard = shared().lock().unwrap_or_else(|error| error.into_inner());

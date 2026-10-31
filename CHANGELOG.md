@@ -9,6 +9,8 @@ changes grouped into Added, Changed, Fixed, and Removed where applicable.
 ### Fixed
 
 - The widget no longer disappears for good when the machine runs out of memory. A panic on any thread, such as the HTTP client failing to start its DNS thread (`ERROR_COMMITMENT_LIMIT`), used to abort the process with no trace; it now writes the panic to the diagnostic log and relaunches a fresh instance, retrying while Windows refuses. Crashes no hook can see are restarted by Windows after 60 s of uptime.
+- A machine out of memory no longer crashes the widget in the first place. HTTP requests resolve names on their own thread instead of starting one each time, and a poll or update check that Windows refuses a thread for is logged and retried. Request limits now apply per phase (connect, send, receive) rather than to the whole call.
+- Relaunching no longer fails with `ERROR_INVALID_HANDLE` in an instance that Windows itself restarted.
 
 ## [2.19.1] - 2026-10-19
 

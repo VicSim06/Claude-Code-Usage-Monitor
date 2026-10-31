@@ -216,11 +216,12 @@ fn build_agent() -> Result<ureq::Agent, String> {
         .provider(ureq::tls::TlsProvider::NativeTls)
         .root_certs(ureq::tls::RootCerts::PlatformVerifier)
         .build();
-    Ok(ureq::Agent::config_builder()
-        .timeout_global(Some(Duration::from_secs(30)))
-        .tls_config(tls)
-        .build()
-        .into())
+    Ok(
+        crate::poller::with_timeouts(ureq::Agent::config_builder(), Duration::from_secs(30))
+            .tls_config(tls)
+            .build()
+            .into(),
+    )
 }
 
 fn download_release_asset(url: &str, partial_path: &Path, final_path: &Path) -> Result<(), String> {

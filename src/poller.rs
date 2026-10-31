@@ -216,7 +216,7 @@ where
             let providers = &providers;
             let poll_provider = &poll_provider;
             let next_provider = &next_provider;
-            scope.spawn(move || loop {
+            let spawned = std::thread::Builder::new().spawn_scoped(scope, move || loop {
                 let index = next_provider.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
                 let Some(provider) = providers.get(index).copied() else {
                     break;
@@ -225,6 +225,11 @@ where
                     break;
                 }
             });
+            // The workers left take over; with none, the poll fails and is retried.
+            if let Err(error) = spawned {
+                diagnose::log_error("usage poll worker not started", error);
+                break;
+            }
         }
         drop(sender);
         receiver
@@ -344,6 +349,22 @@ fn antigravity_credential_watch_snapshot(_all_sources: bool) -> CredentialWatchS
     vec![antigravity::antigravity_credential_watch_signature()]
 }
 
+/// Bounds each phase of a request instead of the whole call. Any global or
+/// per-call timeout makes ureq resolve on a new thread, whose failure to start
+/// is a panic: on a machine out of commit, that killed the widget. Without one,
+/// names resolve on the caller's thread, and an IP address needs no lookup.
+pub(crate) fn with_timeouts(
+    config: ureq::config::ConfigBuilder<ureq::typestate::AgentScope>,
+    limit: Duration,
+) -> ureq::config::ConfigBuilder<ureq::typestate::AgentScope> {
+    config
+        .timeout_connect(Some(limit))
+        .timeout_send_request(Some(limit))
+        .timeout_send_body(Some(limit))
+        .timeout_recv_response(Some(limit))
+        .timeout_recv_body(Some(limit))
+}
+
 fn build_agent() -> Result<ureq::Agent, PollError> {
     static AGENT: OnceLock<Result<ureq::Agent, PollError>> = OnceLock::new();
     // Agent clones share their connection pool, cookies, and TLS configuration.
@@ -353,11 +374,12 @@ fn build_agent() -> Result<ureq::Agent, PollError> {
                 .provider(ureq::tls::TlsProvider::NativeTls)
                 .root_certs(ureq::tls::RootCerts::PlatformVerifier)
                 .build();
-            Ok(ureq::Agent::config_builder()
-                .timeout_global(Some(Duration::from_secs(30)))
-                .tls_config(tls)
-                .build()
-                .into())
+            Ok(
+                with_timeouts(ureq::Agent::config_builder(), Duration::from_secs(30))
+                    .tls_config(tls)
+                    .build()
+                    .into(),
+            )
         })
         .clone()
 }
