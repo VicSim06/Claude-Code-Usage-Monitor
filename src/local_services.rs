@@ -197,12 +197,12 @@ fn shared() -> &'static Mutex<Shared> {
 
 fn poll_loop() {
     // No proxy: a system proxy would turn a local call into a remote one.
-    let agent: ureq::Agent = ureq::Agent::config_builder()
-        .timeout_global(Some(POLL_TIMEOUT))
-        .http_status_as_error(false)
-        .proxy(None)
-        .build()
-        .into();
+    let agent: ureq::Agent =
+        crate::poller::with_timeouts(ureq::Agent::config_builder(), POLL_TIMEOUT)
+            .http_status_as_error(false)
+            .proxy(None)
+            .build()
+            .into();
     let mut round: u32 = 0;
     loop {
         let (wanted, engine_up) = {

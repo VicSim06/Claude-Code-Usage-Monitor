@@ -474,7 +474,7 @@ fn relaunch_self() {
     };
 
     let args: Vec<String> = std::env::args().skip(1).collect();
-    match std::process::Command::new(exe)
+    match without_inherited_stdio(std::process::Command::new(exe))
         .args(&args)
         .env(ENV_RELAUNCH, "1")
         .env(ENV_LAST_RELAUNCH_UNIX, now.to_string())
@@ -490,11 +490,23 @@ fn relaunch_self() {
     }
 }
 
+/// A process restarted by Windows can hold invalid standard handles, and
+/// inheriting them makes `spawn` fail with `ERROR_INVALID_HANDLE`.
+fn without_inherited_stdio(mut command: std::process::Command) -> std::process::Command {
+    use std::process::Stdio;
+    command
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null());
+    command
+}
+
 /// Keep one failed worker from costing the whole widget.
 ///
 /// The release build aborts on panic, and a panic needs no bug: with the machine
-/// out of commit, `ureq` cannot start its DNS thread and `thread::spawn` panics
-/// (`ERROR_COMMITMENT_LIMIT`). A panic relaunches a fresh process, retrying while
+/// out of commit, `thread::spawn` panics (`ERROR_COMMITMENT_LIMIT`), so the
+/// recurring workers go through `Builder::spawn`. A panic left over, in a startup
+/// thread for instance, relaunches a fresh process, retrying while
 /// Windows refuses it too. What no hook sees (heap corruption, a failed
 /// allocation) is left to Windows' own restart, which waits for 60 s of uptime.
 fn install_crash_recovery(relaunch: fn()) {
@@ -1278,7 +1290,7 @@ fn begin_update_check(hwnd: HWND, interactive: bool) {
         (app_state.language.strings(), app_state.install_channel)
     };
 
-    std::thread::spawn(move || {
+    let spawned = std::thread::Builder::new().spawn(move || {
         let hwnd = send_hwnd.to_hwnd();
         let checked_at = now_unix_secs();
         match updater::check_for_updates() {
@@ -1357,6 +1369,25 @@ fn begin_update_check(hwnd: HWND, interactive: bool) {
             }
         }
     });
+    if let Err(error) = spawned {
+        diagnose::log_error("update check not started", &error);
+        if let Some(s) = lock_state().as_mut() {
+            s.update_status = UpdateStatus::Idle;
+            publish_update_status(s);
+        }
+        if interactive {
+            let message = format!("{}.\n\n{}", strings.update_failed, error);
+            show_error_message(hwnd, strings.updates, &message);
+        }
+        unsafe {
+            let _ = PostMessageW(
+                Some(hwnd),
+                WM_APP_UPDATE_CHECK_COMPLETE,
+                WPARAM(0),
+                LPARAM(0),
+            );
+        }
+    }
 }
 
 fn begin_update_apply(hwnd: HWND, release: ReleaseDescriptor) {
@@ -1384,7 +1415,8 @@ fn begin_update_apply(hwnd: HWND, release: ReleaseDescriptor) {
         app_state.language.strings()
     };
 
-    std::thread::spawn(move || {
+    let available = UpdateStatus::Available(release.clone());
+    let spawned = std::thread::Builder::new().spawn(move || {
         let hwnd = send_hwnd.to_hwnd();
         match updater::begin_self_update(&release) {
             Ok(()) => unsafe {
@@ -1411,6 +1443,23 @@ fn begin_update_apply(hwnd: HWND, release: ReleaseDescriptor) {
             }
         }
     });
+    if let Err(error) = spawned {
+        diagnose::log_error("update not started", &error);
+        if let Some(s) = lock_state().as_mut() {
+            s.update_status = available;
+            publish_update_status(s);
+        }
+        let message = format!("{}.\n\n{}", strings.update_failed, error);
+        show_error_message(hwnd, strings.updates, &message);
+        unsafe {
+            let _ = PostMessageW(
+                Some(hwnd),
+                WM_APP_UPDATE_CHECK_COMPLETE,
+                WPARAM(0),
+                LPARAM(0),
+            );
+        }
+    }
 }
 
 fn begin_winget_update(hwnd: HWND) {
@@ -2504,7 +2553,12 @@ fn request_poll_inner(hwnd: HWND, queue_if_busy: bool) {
         return;
     }
     let send_hwnd = SendHwnd::from_hwnd(hwnd);
-    std::thread::spawn(move || poll_worker(send_hwnd, !queue_if_busy));
+    let spawned = std::thread::Builder::new().spawn(move || poll_worker(send_hwnd, !queue_if_busy));
+    if let Err(error) = spawned {
+        // The next timer tick retries; only the flag must not stay taken.
+        diagnose::log_error("poll worker not started", error);
+        POLL_IN_FLIGHT.store(false, Ordering::Release);
+    }
 }
 
 /// Run credential watching under the same in-flight guard as usage polling.
@@ -3280,6 +3334,43 @@ mod placement_regression_tests;
 #[cfg(test)]
 mod crash_recovery_tests {
     use super::*;
+
+    #[test]
+    fn relaunch_survives_invalid_standard_handles() {
+        use windows::Win32::Foundation::HANDLE;
+        use windows::Win32::System::Console::{
+            SetStdHandle, STD_ERROR_HANDLE, STD_INPUT_HANDLE, STD_OUTPUT_HANDLE,
+        };
+        // Standard handles are process-wide, so this runs in a child test process.
+        const ENV_CHILD: &str = "CCUM_STDIO_CHILD";
+        if std::env::var_os(ENV_CHILD).is_some() {
+            for handle in [STD_INPUT_HANDLE, STD_OUTPUT_HANDLE, STD_ERROR_HANDLE] {
+                unsafe { SetStdHandle(handle, HANDLE(0xDEAD0 as *mut _)) }.unwrap();
+            }
+            let command = || {
+                let mut command = std::process::Command::new("cmd");
+                command.args(["/c", "exit 0"]);
+                command
+            };
+            assert_eq!(command().spawn().unwrap_err().raw_os_error(), Some(6));
+            assert!(without_inherited_stdio(command())
+                .status()
+                .unwrap()
+                .success());
+            std::process::exit(42);
+        }
+        let status = std::process::Command::new(std::env::current_exe().unwrap())
+            .args([
+                "--exact",
+                "window::crash_recovery_tests::relaunch_survives_invalid_standard_handles",
+            ])
+            .env(ENV_CHILD, "1")
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null())
+            .status()
+            .unwrap();
+        assert_eq!(status.code(), Some(42));
+    }
 
     #[test]
     fn a_worker_panic_relaunches_the_widget() {

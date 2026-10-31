@@ -72,6 +72,24 @@ fn configured_https_transport_does_not_panic() {
 }
 
 #[test]
+fn request_timeouts_leave_name_resolution_on_the_calling_thread() {
+    let limit = Duration::from_secs(5);
+    let config = with_timeouts(ureq::Agent::config_builder(), limit).build();
+    let timeouts = config.timeouts();
+
+    // ureq starts a resolver thread as soon as one of these three is set.
+    assert_eq!(timeouts.global, None);
+    assert_eq!(timeouts.per_call, None);
+    assert_eq!(timeouts.resolve, None);
+
+    assert_eq!(timeouts.connect, Some(limit));
+    assert_eq!(timeouts.send_request, Some(limit));
+    assert_eq!(timeouts.send_body, Some(limit));
+    assert_eq!(timeouts.recv_response, Some(limit));
+    assert_eq!(timeouts.recv_body, Some(limit));
+}
+
+#[test]
 fn stale_usage_does_not_trigger_reset_polling() {
     let mut usage = usage_with_session_percent(42.0);
     usage.session.resets_at = Some(UNIX_EPOCH);
